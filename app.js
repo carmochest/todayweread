@@ -51,113 +51,147 @@ const BFS=[];
 document.querySelectorAll("[data-butterfly]").forEach(el => new Butterfly(el, el.dataset.butterfly||"idle"));
 document.querySelectorAll("[data-wordmark]").forEach(el => { el.innerHTML = WM[el.dataset.wordmark]; });
 
-/* ---------- Garden hero: quiet geometry ---------- */
-const INK={butter:"#FFD468", deep:"#E9B93B", deeper:"#D9A72E", plum:"#945777", plumD:"#5E3349", cream:"#FFF7E0", blush:"#F6C7B1", mint:"#BFD9D0", lav:"#C9CFF0", coral:"#F08A7A", pale:"#F1D6E4"};
-const P = pts => "M"+pts.map(p=>p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ")+"Z";
-const circ=(cx,cy,r,f)=>`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${f}"/>`;
-const HEADS={   // origin at head centre; r = radius the stem meets; top = perch height above centre
-  daisy:(c)=>({svg:Array.from({length:8},(_,k)=>circ(Math.cos(k/8*6.283)*34,Math.sin(k/8*6.283)*34,17,c)).join("")+circ(0,0,17,INK.plum), top:-52, r:50}),
-  arch: (c)=>({svg:`<path d="M-38 30 V-6 A38 38 0 0 1 38 -6 V30Z" fill="${c}"/>`+circ(0,-6,11,INK.plumD), top:-44, r:30}),
-  sun:  (c)=>({svg:Array.from({length:12},(_,k)=>`<path d="M0 -30 L12 -62 L-12 -62Z" fill="${c}" transform="rotate(${k*30})"/>`).join("")+circ(0,0,32,c)+circ(0,0,15,INK.butter), top:-62, r:60}),
-  stack:(c)=>({svg:[30,26,22,18,14].map((r,k)=>circ(0,-k*40,r,c)).join(""), top:-176, r:30}),
-  bowl: (c)=>({svg:`<path d="M-46 0 A46 46 0 0 0 46 0Z" fill="${c}"/>`+circ(0,-14,10,INK.plumD), top:-16, r:46}),
-  ring: (c)=>({svg:`<path d="M0 -50 A50 50 0 1 1 0 50 A50 50 0 1 1 0 -50 M0 -26 A26 26 0 1 0 0 26 A26 26 0 1 0 0 -26Z" fill="${c}" fill-rule="evenodd"/>`, top:-50, r:50}),
-  star: (c)=>({svg:`<path d="${P(Array.from({length:10},(_,k)=>{const r=k%2?26:58,a=k/10*6.283-1.5708;return [Math.cos(a)*r,Math.sin(a)*r]}))}" fill="${c}"/>`+circ(0,0,10,INK.butter), top:-58, r:56})
+/* ---------- Garden hero ---------- */
+const C = {
+  sky:"#FFF1C9", sun:"#FFD468", sunL:"#E9B93B", cloud:"#FFFBEF", cloudL:"#EAD9A8",
+  hillFar:"#D6EADC", hillFarL:"#B4D6C2", hillMid:"#B4D6C2", hillMidL:"#86BC9E", bush:"#86BC9E", bushL:"#559B78",
+  ground:"#6FAE8C", groundL:"#3F7B5E", stem:"#5FA684", stemL:"#3F7B5E", leaf:"#8FC9A8", leafL:"#4F9473",
+  plum:"#945777", plumL:"#6B3C56", butter:"#FFD468", butterL:"#E9B93B", blush:"#F6C7B1", blushL:"#D9906F",
+  lav:"#C9CFF0", lavL:"#8F98D6", coral:"#F08A7A", coralL:"#C9604F", pale:"#F1D6E4", paleL:"#C99DB4", ink:"#5E3349"
 };
-const PLANTS=[
-  {label:"Children's",           sub:"Picture & board books", href:"#books",    tab:"Picture Books", kind:"daisy", color:INK.cream},
-  {label:"Fiction & Literature", sub:"Novels & stories",      href:"#books",    tab:"Fiction",       kind:"arch",  color:INK.lav},
-  {label:"Art & Design",         sub:"Monographs & manuals",  href:"#books",    tab:"Design & Art",  kind:"sun",   color:INK.plum},
-  {label:"Non-Fiction",          sub:"Essays & ideas",        href:"#books",    tab:"Non-fiction",   kind:"stack", color:INK.mint},
-  {label:"Lifestyle",            sub:"Food, home & city",     href:"#books",    tab:"Non-fiction",   kind:"bowl",  color:INK.coral},
-  {label:"Gifts & Games",        sub:"Non-books",             href:"#nonbooks", tab:null,            kind:"ring",  color:INK.pale},
-  {label:"Events",               sub:"This month's exhibition",href:"#events",  tab:null,            kind:"star",  color:INK.plumD}
+const PLANTS = [
+  {label:"Children's",           sub:"Picture & board books", href:"#books",    tab:"Picture Books", kind:"daisy"},
+  {label:"Fiction & Literature", sub:"Novels & stories",      href:"#books",    tab:"Fiction",       kind:"tulip"},
+  {label:"Art & Design",         sub:"Monographs & manuals",  href:"#books",    tab:"Design & Art",  kind:"sunflower"},
+  {label:"Non-Fiction",          sub:"Essays & ideas",        href:"#books",    tab:"Non-fiction",   kind:"lupin"},
+  {label:"Lifestyle",            sub:"Food, home & city",     href:"#books",    tab:"Non-fiction",   kind:"poppy"},
+  {label:"Gifts & Games",        sub:"Non-books",             href:"#nonbooks", tab:null,            kind:"allium"},
+  {label:"Events",               sub:"This month's exhibition",href:"#events",  tab:null,            kind:"star"}
 ];
-// x, base y, stem height, scale, lean(deg), perch tilt
-const LAYOUTS={
-  wide:  {vb:[0,0,1600,720], S:0.08, pos:[[190,645,300,1.0,-3,-6],[350,640,210,0.85,4,4],[600,690,400,1.2,-2,-3],[850,695,300,0.9,3,2],[1000,655,200,0.8,-5,6],[1230,690,410,1.05,2,-4],[1420,685,260,0.95,-3,3]], back:[[90,640,180],[470,632,150],[740,690,130],[1120,650,190],[1540,690,150],[1330,695,100]]},
-  narrow:{vb:[0,0,800,900],  S:0.09, pos:[[120,822,250,.95,-3,-6],[290,862,190,.85,4,4],[520,860,300,1.05,-2,-3],[710,822,320,.9,3,2],[190,605,190,.75,-5,6],[440,635,230,.85,2,-4],[660,635,210,.8,-3,3]], back:[[40,600,90],[360,600,110],[590,630,70],[770,630,80]]}
+// [x, stem height, perch tilt] per plant
+const LAYOUTS = {
+  wide:  {vb:[0,0,1600,720], G:600, S:0.078, pos:[[150,250,-6],[380,340,4],[600,300,-3],[830,330,2],[1040,270,6],[1250,360,-4],[1460,290,3]]},
+  narrow:{vb:[0,0,800,900],  G:780, S:0.09,  pos:[[95,230,-6],[300,330,4],[520,240,-3],[720,300,2],[180,470,6],[430,560,-4],[660,540,3]]}
 };
-function plantSVG(p,i,L){
-  const [x,by,h,sc,lean,tilt]=L.pos[i], head=HEADS[p.kind](p.color), top=by-h;
-  const stem=`<path d="M${x} ${by} Q${x+(i%2?1:-1)*(8+h*0.05)} ${by-h*0.55} ${x} ${top+head.r*sc-4}" fill="none" stroke="${INK.plumD}" stroke-width="${5*sc}" stroke-linecap="round"/>`;
-  const leaf=(ly,dir,len)=>`<path class="leaf" style="transform-origin:${x}px ${ly}px" d="M${x} ${ly} q${dir*len*0.35} ${-len*0.55} ${dir*len} ${-len*0.35} q${-dir*len*0.45} ${len*0.35} ${-dir*len} ${len*0.35}Z" fill="${INK.plumD}"/>`;
-  const leaves=leaf(by-h*0.32,-1,52*sc)+leaf(by-h*0.55,1,44*sc)+(h>300?leaf(by-h*0.74,-1,38*sc):"");
-  const w=Math.max(p.label.length*9.4,p.sub.length*7)+34, W=L.vb[2];
-  const right=x+head.r*sc+w/2+30<W-8; const tx=right? x+head.r*sc+22 : x-head.r*sc-22-w, ty=top-24;
+const HEADS = {
+  // each returns {svg, top} — svg drawn with origin at head centre, stem attaches at (0, +r); top = y of the perch point (negative = above centre)
+  daisy(){ const p=Array.from({length:9},(_,k)=>`<ellipse cx="0" cy="-40" rx="17" ry="34" fill="${C.butter}" stroke="${C.butterL}" stroke-width="6" transform="rotate(${k*40})"/>`).join(""); return {svg:p+`<circle r="24" fill="${C.plum}" stroke="${C.plumL}" stroke-width="6"/>`, top:-70, r:60}; },
+  tulip(){ return {svg:`<path d="M-42 26 C-56 -34 -20 -66 0 -26 C20 -66 56 -34 42 26 Q0 46 -42 26Z" fill="${C.blush}" stroke="${C.blushL}" stroke-width="6" stroke-linejoin="round"/><path d="M0 -26 V22" stroke="${C.blushL}" stroke-width="6" stroke-linecap="round"/>`, top:-56, r:44}; },
+  sunflower(){ const p=Array.from({length:14},(_,k)=>`<path d="M0 -34 C14 -50 14 -78 0 -84 C-14 -78 -14 -50 0 -34Z" fill="${C.plum}" stroke="${C.plumL}" stroke-width="6" stroke-linejoin="round" transform="rotate(${k*25.7})"/>`).join(""); return {svg:p+`<circle r="38" fill="${C.butter}" stroke="${C.butterL}" stroke-width="6"/><circle r="16" fill="none" stroke="${C.butterL}" stroke-width="6"/>`, top:-84, r:84}; },
+  lupin(){ const p=Array.from({length:6},(_,k)=>`<ellipse cx="${k%2?18:-18}" cy="${-k*30}" rx="24" ry="19" fill="${C.lav}" stroke="${C.lavL}" stroke-width="6"/>`).join(""); return {svg:p+`<ellipse cy="-176" rx="14" ry="18" fill="${C.lavL}"/>`, top:-194, r:20}; },
+  poppy(){ return {svg:`<path d="M-50 -6 C-54 -50 -18 -62 0 -40 C18 -62 54 -50 50 -6 C46 26 -46 26 -50 -6Z" fill="${C.coral}" stroke="${C.coralL}" stroke-width="6" stroke-linejoin="round"/><circle cy="-2" r="16" fill="${C.ink}"/>`, top:-58, r:30}; },
+  allium(){ const p=Array.from({length:12},(_,k)=>`<circle cx="${(Math.cos(k/12*6.283)*34).toFixed(1)}" cy="${(Math.sin(k/12*6.283)*34).toFixed(1)}" r="19" fill="${C.pale}" stroke="${C.paleL}" stroke-width="6"/>`).join(""); return {svg:p+`<circle r="22" fill="${C.plum}" stroke="${C.plumL}" stroke-width="6"/>`, top:-56, r:56}; },
+  star(){ const d=Array.from({length:10},(_,k)=>{const r=k%2?30:66,a=k/10*6.283-1.5708;return (k?"L":"M")+(Math.cos(a)*r).toFixed(1)+" "+(Math.sin(a)*r).toFixed(1)}).join("")+"Z"; return {svg:`<path d="${d}" fill="${C.butter}" stroke="${C.butterL}" stroke-width="6" stroke-linejoin="round"/><circle r="15" fill="${C.plum}" stroke="${C.plumL}" stroke-width="6"/>`, top:-68, r:66}; }
+};
+function scallop(cx, cy, w, h, n, fill, stroke){  // a bush/cloud: row of circles, outlined as one shape
+  const r=h/2, step=w/n; let a="",b="";
+  for(let i=0;i<=n;i++){ const x=cx-w/2+i*step, y=cy-(i%2?r*.45:0); a+=`<circle cx="${x}" cy="${y}" r="${r+6}" fill="${stroke}"/>`; b+=`<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}"/>`; }
+  return `<g>${a}<rect x="${cx-w/2}" y="${cy}" width="${w}" height="${h*2}" fill="${stroke}"/>${b}<rect x="${cx-w/2}" y="${cy+6}" width="${w}" height="${h*2}" fill="${fill}"/></g>`;
+}
+function cloud(cx,cy,s){ return `<g class="cloud" style="--cx:${cx}px">${scallop(cx,cy,110*s,46*s,4,C.cloud,C.cloudL).replace(/<rect[^>]*>/g,"")}<rect x="${cx-55*s}" y="${cy}" width="${110*s}" height="${23*s}" fill="${C.cloud}"/><path d="M${cx-55*s} ${cy+23*s} H${cx+55*s}" stroke="${C.cloudL}" stroke-width="6" stroke-linecap="round"/></g>`; }
+function plantSVG(p, i, L){
+  const [x,h,tilt]=L.pos[i], G=L.G, head=HEADS[p.kind](), top=G-h;
+  const bend = (i%2?1:-1)*22;
+  const stem=`<path d="M${x} ${G} C${x} ${G-h*.45} ${x+bend} ${G-h*.65} ${x} ${top+head.r-8}" fill="none" stroke="${C.stemL}" stroke-width="22" stroke-linecap="round"/>
+              <path d="M${x} ${G} C${x} ${G-h*.45} ${x+bend} ${G-h*.65} ${x} ${top+head.r-8}" fill="none" stroke="${C.stem}" stroke-width="12" stroke-linecap="round"/>`;
+  const leaf=(ly,dir,sz)=>`<g class="leaf" style="transform-origin:${x}px ${ly}px"><path d="M${x} ${ly} c${dir*sz*.5} ${-sz*.9} ${dir*sz*1.5} ${-sz*.7} ${dir*sz*1.7} ${sz*.1} c${-dir*sz*.7} ${sz*.7} ${-dir*sz*1.4} ${sz*.5} ${-dir*sz*1.7} ${-sz*.1}Z" fill="${C.leaf}" stroke="${C.leafL}" stroke-width="6" stroke-linejoin="round"/><path d="M${x} ${ly} l${dir*sz*1.3} ${-sz*.05}" stroke="${C.leafL}" stroke-width="5" stroke-linecap="round"/></g>`;
+  const leaves = leaf(G-h*.3, -1, 46) + leaf(G-h*.52, 1, 40) + (h>330 ? leaf(G-h*.72,-1,34) : "");
+  const w = Math.max(p.label.length*9.4, p.sub.length*7)+34, W=L.vb[2];
+  const right = x+head.r+w/2+24 < W-10;          // put the tag on whichever side has room
+  const tx = right ? x+head.r+20 : x-head.r-20-w;
+  const ty = top-22;
   return `<a class="plant" data-plant="${i}" href="${p.href}" ${p.tab?`data-tab="${p.tab}"`:""} aria-label="${p.label} — ${p.sub}">
-    <g class="sway" data-base="${x},${by}" data-lean="${lean}">
-      ${stem}${leaves}
-      <g class="head" transform="translate(${x} ${top}) scale(${sc})">${head.svg}</g>
-      <g transform="translate(${tx} ${ty})"><g class="tag"><rect width="${w}" height="50" rx="25" fill="${INK.cream}"/><text x="${w/2}" y="22" text-anchor="middle" class="tl">${p.label}</text><text x="${w/2}" y="39" text-anchor="middle" class="ts">${p.sub}</text></g></g>
+    <g class="sway" data-base="${x},${G}">${stem}${leaves}<g class="head" transform="translate(${x} ${top})">${head.svg}</g>
+      <g transform="translate(${tx} ${ty})"><g class="tag"><rect width="${w}" height="50" rx="25" fill="#fff" stroke="${C.plumL}" stroke-width="2"/><text x="${w/2}" y="22" text-anchor="middle" class="tl">${p.label}</text><text x="${w/2}" y="39" text-anchor="middle" class="ts">${p.sub}</text></g></g>
     </g></a>`;
 }
 const garden=document.getElementById("garden");
 let GS=null;
 function buildGarden(){
-  const L=window.innerWidth<=900?LAYOUTS.narrow:LAYOUTS.wide;
-  if(GS&&GS.L===L) return;
-  const [,,W,H]=L.vb, wide=W>1000;
-  // stepped terraces (isometric-ish): top face light, front face darker
-  const terr=(x0,x1,y,d)=>`<path d="M${x0} ${y} L${x0+d} ${y-d*0.5} L${x1+d} ${y-d*0.5} L${x1} ${y}Z" fill="${INK.deep}"/><path d="M${x0} ${y} H${x1} V${H} H${x0}Z" fill="${INK.deeper}"/>`;
-  const terraces = wide
-    ? terr(-40,520,650,60)+terr(520,900,700,60)+terr(900,1150,662,60)+terr(1150,1660,700,60)
-    : terr(-40,330,610,30)+terr(330,840,640,30)+terr(-40,250,830,40)+terr(250,600,870,40)+terr(600,840,830,40);
-  const back=L.back.map(([bx,bb,bh],k)=>`<g class="sway back" data-base="${bx},${bb}"><path d="M${bx} ${bb} V${bb-bh}" stroke="${INK.deep}" stroke-width="4" stroke-linecap="round"/>${circ(bx,bb-bh-16,k%2?18:13,INK.deep)}</g>`).join("");
-  const sun=`${circ(wide?W*.82:W*.78, wide?130:105, wide?58:42, INK.cream)}`;
-  garden.innerHTML=`<svg viewBox="${L.vb.join(" ")}" role="group" aria-label="Browse the shelves">
-    <rect width="${W}" height="${H}" fill="${INK.butter}"/>
-    ${sun}${back}${terraces}
+  const L = window.innerWidth<=900 ? LAYOUTS.narrow : LAYOUTS.wide;
+  if(GS && GS.L===L) return;
+  const [,,W,H]=L.vb, G=L.G, wide=W>1000;
+  const clouds = wide ? cloud(260,120,1)+cloud(700,80,.8)+cloud(1300,150,1.15) : cloud(150,110,.8)+cloud(560,70,.9);
+  const hills = `<path d="M0 ${G-150} C${W*.2} ${G-260} ${W*.4} ${G-120} ${W*.55} ${G-200} S${W*.85} ${G-280} ${W} ${G-190} V${G} H0Z" fill="${C.hillFar}" stroke="${C.hillFarL}" stroke-width="6"/>
+    <path d="M0 ${G-80} C${W*.15} ${G-150} ${W*.35} ${G-60} ${W*.5} ${G-120} S${W*.8} ${G-40} ${W} ${G-110} V${G} H0Z" fill="${C.hillMid}" stroke="${C.hillMidL}" stroke-width="6"/>`;
+  const bushes = wide ? scallop(220,G-30,300,70,5,C.bush,C.bushL)+scallop(760,G-22,380,60,6,C.bush,C.bushL)+scallop(1330,G-34,340,76,5,C.bush,C.bushL)
+                      : scallop(180,G-26,300,64,5,C.bush,C.bushL)+scallop(620,G-30,320,70,5,C.bush,C.bushL);
+  const grass=Array.from({length:Math.round(W/46)},(_,k)=>{const gx=k*46+12, gh=12+((k*7)%3)*5; return `<path class="grass" style="transform-origin:${gx}px ${G}px;animation-delay:${-(k%7)*.4}s" d="M${gx} ${G} q3 -${gh} 9 -${gh+6} M${gx+6} ${G} q-2 -${gh*.6} -8 -${gh*.8}" fill="none" stroke="${C.bushL}" stroke-width="4" stroke-linecap="round"/>`}).join("");
+  const backPlants = wide ? `<g opacity=".55">${[[300,150],[960,170],[1560,140],[720,120]].map(([bx,bh],k)=>`<path d="M${bx} ${G} v-${bh}" stroke="${C.hillMidL}" stroke-width="10" stroke-linecap="round"/><circle cx="${bx}" cy="${G-bh-14}" r="18" fill="${[C.pale,C.lav,C.blush,C.butter][k]}" stroke="${C.hillMidL}" stroke-width="5"/>`).join("")}</g>` : "";
+  garden.innerHTML = `<svg viewBox="${L.vb.join(" ")}" role="group" aria-label="Browse the shelves">
+    <rect width="${W}" height="${H}" fill="${C.sky}"/>
+    <circle cx="${wide?W*.91:W*.84}" cy="${wide?140:110}" r="${wide?80:56}" fill="${C.sun}" stroke="${C.sunL}" stroke-width="6"/>
+    ${clouds}${hills}${backPlants}${bushes}
+    <rect y="${G}" width="${W}" height="${H-G}" fill="${C.ground}"/>
+    <path d="M0 ${G} H${W}" stroke="${C.groundL}" stroke-width="6"/>
+    ${grass}
     ${PLANTS.map((p,i)=>plantSVG(p,i,L)).join("")}
     <g id="bfly"><g id="bflyInner">${butterflyMarkup()}</g></g>
   </svg>`;
   const plants=[...garden.querySelectorAll(".plant")];
-  const allSway=[...garden.querySelectorAll(".sway")].map(g=>{ const [bx,by]=g.dataset.base.split(",").map(Number); const lean=+(g.dataset.lean||0); const h=by-(g.getBBox().y); return {g,bx,by,lean,amp:(0.6+h/380)*1.25,w1:0.5+Math.random()*0.3,w2:1.6+Math.random()*0.6,ph:Math.random()*6.28,imp:0,impV:0,a:0}; });
-  const sways=plants.map(el=>allSway.find(s=>s.g===el.querySelector(".sway")));
-  const spots=PLANTS.map((p,i)=>{ const [x,by,h,sc,lean,tilt]=L.pos[i]; return {x, y: by-h+HEADS[p.kind](p.color).top*sc+6, tilt}; });
+  const sways=plants.map(el=>{ const g=el.querySelector(".sway"); const [bx,by]=g.dataset.base.split(",").map(Number); const [x,h]=L.pos[plants.indexOf(el)]; return {g, bx, by, amp:(0.9+h/400)*1.3, w1:0.55+Math.random()*0.25, w2:1.7+Math.random()*0.5, ph:Math.random()*6.28, imp:0, impV:0}; });
+  const spots=PLANTS.map((p,i)=>{ const [x,h,tilt]=L.pos[i]; const top=L.G-h; return {x, y: top+HEADS[p.kind]().top+10, tilt}; });
   const setBf=bindButterfly(garden.querySelector("#bflyInner"));
-  GS={L,W,H,plants,sways,allSway,spots,S:L.S,bf:garden.querySelector("#bfly"),setBf,i:0,state:"perch",until:performance.now()+2600,next:null,flapPhase:0,lastNow:performance.now(),restFlapAt:performance.now()+1800,restFlapT0:-1e9,from:null,to:null,t0:0,dur:0,ctrl:null};
-  plants.forEach((el,k)=>el.addEventListener("pointerenter",()=>{ if(GS.i!==k){ GS.next=k; if(GS.state==="perch") GS.until=Math.min(GS.until,performance.now()+300); } }));
-  markHere(0); GS.setBf(0.14);
+  GS={L, W, H, G, plants, sways, spots, S:L.S, bf:garden.querySelector("#bfly"), setBf, i:0, state:"perch", until:performance.now()+2600, next:null,
+      flapPhase:0, lastNow:performance.now(), restFlapAt:performance.now()+1800, restFlapT0:0, from:null, to:null, t0:0, dur:0, ctrl:null, lastT:0};
+  plants.forEach((el,k)=>{
+    el.addEventListener("pointerenter",()=>{ if(GS.i!==k){ GS.next=k; if(GS.state==="perch") GS.until=Math.min(GS.until, performance.now()+300); } });
+  });
+  markHere(0); GS.setBf(0.15);
 }
-function markHere(i){ GS.plants.forEach((el,k)=>el.classList.toggle("here",k===i)); if(i>=0){ const el=GS.plants[i]; el.parentNode.insertBefore(el,GS.bf); } }
-function plantAngle(s,now){ const t=now/1000, gust=0.6*Math.sin(t*0.23)+0.4*Math.sin(t*0.07); return s.lean + s.amp*(Math.sin(t*s.w1+s.ph)*(0.8+gust)+0.35*Math.sin(t*s.w2+s.ph*2)) + s.imp; }
-function rotPt(px,py,bx,by,deg){ const r=deg*Math.PI/180,c=Math.cos(r),si=Math.sin(r),dx=px-bx,dy=py-by; return [bx+dx*c-dy*si, by+dx*si+dy*c]; }
+function markHere(i){ GS.plants.forEach((el,k)=>el.classList.toggle("here",k===i)); if(i>=0){ const el=GS.plants[i]; el.parentNode.insertBefore(el, GS.bf); } }
+function plantAngle(s, now){                           // wind + landing impulse, degrees
+  const t=now/1000, gust = 0.6*Math.sin(t*0.23)+0.4*Math.sin(t*0.07);   // slow global gusts
+  return s.amp*(Math.sin(t*s.w1+s.ph)*(0.8+gust) + 0.35*Math.sin(t*s.w2+s.ph*2)) + s.imp;
+}
+function rotPt(px,py,bx,by,deg){ const r=deg*Math.PI/180, c=Math.cos(r), si=Math.sin(r), dx=px-bx, dy=py-by; return [bx+dx*c-dy*si, by+dx*si+dy*c]; }
 function placeBf(x,y,rot,t){ const s=GS; s.bf.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${rot.toFixed(2)}) scale(${s.S}) translate(-990 -1290)`); s.setBf(t); }
 function gardenTick(now){
   const s=GS; if(!s) return;
-  const dt=Math.min(50,now-s.lastNow); s.lastNow=now;
-  for(const sw of s.allSway){
-    sw.impV+=(-sw.imp*0.012-sw.impV*0.09)*dt*0.5; sw.imp+=sw.impV*dt*0.06;
-    sw.a=REDUCED?sw.lean:plantAngle(sw,now); sw.g.setAttribute("transform",`rotate(${sw.a.toFixed(3)} ${sw.bx} ${sw.by})`);
+  const dt=Math.min(50, now-s.lastNow); s.lastNow=now;
+  // wind on every plant (+ damped spring for landing impulse)
+  for(const sw of s.sways){
+    sw.impV += (-sw.imp*0.012 - sw.impV*0.09)*dt*0.5; sw.imp += sw.impV*dt*0.06;
+    const a = REDUCED ? 0 : plantAngle(sw, now);
+    sw.a=a; sw.g.setAttribute("transform",`rotate(${a.toFixed(3)} ${sw.bx} ${sw.by})`);
   }
   if(s.state==="perch"){
     const sp=s.spots[s.i], sw=s.sways[s.i];
-    const [x,y]=rotPt(sp.x,sp.y,sw.bx,sw.by,sw.a);
-    let t=0.14+0.05*Math.sin(now/700);
+    const [x,y]=rotPt(sp.x, sp.y, sw.bx, sw.by, sw.a);
+    // resting wings: mostly open, breathing; an occasional single slow flap
+    let t = 0.14 + 0.05*Math.sin(now/700);
     if(now>=s.restFlapAt){ s.restFlapT0=now; s.restFlapAt=now+2600+Math.random()*2600; }
-    const rf=(now-s.restFlapT0)/900; if(rf>=0&&rf<1) t=Math.max(t,easeIO(Math.sin(rf*Math.PI))*0.85);
-    placeBf(x,y,sw.a+sp.tilt+Math.sin(now/1100)*1.2,REDUCED?0:t);
-    if(now>=s.until&&!REDUCED){
-      let j=(s.next!=null&&s.next!==s.i)?s.next:(s.i+1+Math.floor(Math.random()*(PLANTS.length-1)))%PLANTS.length;
-      s.next=null; s.from={x,y}; s.to=s.spots[j]; s.i=j; s.state="fly"; s.t0=now;
-      const d=Math.hypot(s.to.x-s.from.x,s.to.y-s.from.y), dir=Math.sign(s.to.x-s.from.x)||1;
-      s.dur=1500+d*2.1; const lift=110+d*0.22;
-      s.ctrl=[{x:s.from.x+dir*d*0.18,y:s.from.y-lift},{x:s.to.x-dir*d*0.22,y:Math.min(s.from.y,s.to.y)-lift*0.8}];
-      sw.impV-=0.9; markHere(-1);
+    const rf=(now-s.restFlapT0)/900; if(rf>=0 && rf<1) t = Math.max(t, easeIO(Math.sin(rf*Math.PI))*0.95);
+    placeBf(x, y, sw.a + sp.tilt + Math.sin(now/1100)*1.2, REDUCED?0:t);
+    if(now>=s.until && !REDUCED){
+      let j = (s.next!=null && s.next!==s.i) ? s.next : (s.i+1+Math.floor(Math.random()*(PLANTS.length-1)))%PLANTS.length;
+      s.next=null; s.from={x,y}; s.to=s.spots[j]; s.prev=s.i; s.i=j; s.state="fly"; s.t0=now;
+      const d=Math.hypot(s.to.x-s.from.x, s.to.y-s.from.y), dir=Math.sign(s.to.x-s.from.x)||1;
+      s.dur = 1500 + d*2.1;
+      const lift = 110 + d*0.22;
+      s.ctrl=[ {x:s.from.x+dir*d*0.18, y:s.from.y-lift}, {x:s.to.x-dir*d*0.22, y:Math.min(s.from.y,s.to.y)-lift*0.8} ];
+      sw.impV -= 0.9;                                    // push-off makes the plant spring
+      markHere(-1);
     }
   } else {
-    const u=Math.min(1,(now-s.t0)/s.dur), e=easeIO(u), P0=s.from,[P1,P2]=s.ctrl,P3=s.to,m=1-e;
-    const bx=m*m*m*P0.x+3*m*m*e*P1.x+3*m*e*e*P2.x+e*e*e*P3.x, by=m*m*m*P0.y+3*m*m*e*P1.y+3*m*e*e*P2.y+e*e*e*P3.y;
-    const vx=3*m*m*(P1.x-P0.x)+6*m*e*(P2.x-P1.x)+3*e*e*(P3.x-P2.x), vy=3*m*m*(P1.y-P0.y)+6*m*e*(P2.y-P1.y)+3*e*e*(P3.y-P2.y);
-    const speed=Math.hypot(vx,vy)/s.dur*1000;
-    const hz=u<0.12?9:u>0.82?4.5:6.5+Math.min(2,speed/900);
-    s.flapPhase+=hz*dt/1000;
-    const env=u>0.86?1-(u-0.86)/0.14:1, flap=0.5-0.5*Math.cos(s.flapPhase*6.283), t=flap*env*0.85+(1-env)*0.14;
-    const bob=-Math.sin(s.flapPhase*6.283)*7*env, side=Math.sin(u*9.4)*8*Math.sin(u*Math.PI);
-    const bank=Math.max(-16,Math.min(16,(vx/s.dur)*1000/40))+(vy/s.dur)*1000/90;
-    placeBf(bx+side,by+bob,bank+Math.sin(s.flapPhase*6.283)*2*env,t);
-    if(u>=1){ s.state="perch"; s.until=now+2800+Math.random()*2400; s.restFlapAt=now+700; s.restFlapT0=-1e9; s.sways[s.i].impV+=1.4; markHere(s.i); }
+    const u=Math.min(1,(now-s.t0)/s.dur), e=easeIO(u);
+    const P0=s.from, [P1,P2]=s.ctrl, P3=s.to, m=1-e;
+    const bx = m*m*m*P0.x + 3*m*m*e*P1.x + 3*m*e*e*P2.x + e*e*e*P3.x;
+    const by = m*m*m*P0.y + 3*m*m*e*P1.y + 3*m*e*e*P2.y + e*e*e*P3.y;
+    const vx = 3*m*m*(P1.x-P0.x) + 6*m*e*(P2.x-P1.x) + 3*e*e*(P3.x-P2.x);
+    const vy = 3*m*m*(P1.y-P0.y) + 6*m*e*(P2.y-P1.y) + 3*e*e*(P3.y-P2.y);
+    const speed = Math.hypot(vx,vy)/s.dur*1000;         // units per second along the curve
+    // flapping: fast when climbing/accelerating, easing into a glide before landing
+    const hz = u<0.12 ? 9 : u>0.82 ? 4.5 : 6.5 + Math.min(2, speed/900);
+    s.flapPhase += hz*dt/1000;
+    const env = u>0.86 ? 1-(u-0.86)/0.14 : 1;
+    const flap = 0.5-0.5*Math.cos(s.flapPhase*6.283);
+    const t = flap*env*0.85 + (1-env)*0.14;
+    // the body rises on the downstroke and sinks on the upstroke; a little lateral flutter
+    const bob = -Math.sin(s.flapPhase*6.283)*7*env, side = Math.sin(u*9.4)*8*Math.sin(u*Math.PI);
+    const bank = Math.max(-16, Math.min(16, (vx/s.dur)*1000/40)) + (vy/s.dur)*1000/90;
+    placeBf(bx+side, by+bob, bank + Math.sin(s.flapPhase*6.283)*2*env, t);
+    if(u>=1){ s.state="perch"; s.until=now+2800+Math.random()*2400; s.restFlapAt=now+700; s.restFlapT0=-1e9; s.sways[s.i].impV += 1.4; markHere(s.i); }
   }
 }
 buildGarden();
