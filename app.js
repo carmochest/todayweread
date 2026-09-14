@@ -149,7 +149,7 @@ function gardenTick(now){
   const dt=Math.min(50, now-s.lastNow); s.lastNow=now;
   // wind on every plant (+ damped spring for landing impulse)
   for(const sw of s.sways){
-    sw.impV += (-sw.imp*0.006 - sw.impV*0.14)*dt*0.5; sw.imp += sw.impV*dt*0.06;
+    sw.impV += (-sw.imp*0.00025 - sw.impV*0.028)*dt; sw.imp += sw.impV*dt;   // critically-damped-ish spring, stable at any frame rate
     const a = REDUCED ? 0 : plantAngle(sw, now);
     sw.a=a; sw.g.setAttribute("transform",`rotate(${a.toFixed(3)} ${sw.bx} ${sw.by})`);
   }
@@ -168,7 +168,7 @@ function gardenTick(now){
       s.dur = 1500 + d*2.1;
       const lift = 110 + d*0.22;
       s.ctrl=[ {x:s.from.x+dir*d*0.18, y:s.from.y-lift}, {x:s.to.x-dir*d*0.22, y:Math.min(s.from.y,s.to.y)-lift*0.8} ];
-      sw.impV -= 0.25;                                    // push-off makes the plant spring
+      sw.impV -= 0.02;                                    // push-off makes the plant spring
       markHere(-1);
     }
   } else {
@@ -189,7 +189,7 @@ function gardenTick(now){
     const bob = -Math.sin(s.flapPhase*6.283)*7*env, side = Math.sin(u*9.4)*8*Math.sin(u*Math.PI);
     const bank = Math.max(-16, Math.min(16, (vx/s.dur)*1000/40)) + (vy/s.dur)*1000/90;
     placeBf(bx+side, by+bob, bank + Math.sin(s.flapPhase*6.283)*2*env, t);
-    if(u>=1){ s.state="perch"; s.until=now+2800+Math.random()*2400; s.restFlapAt=now+700; s.restFlapT0=-1e9; s.sways[s.i].impV += 0.35; markHere(s.i); }
+    if(u>=1){ s.state="perch"; s.until=now+2800+Math.random()*2400; s.restFlapAt=now+700; s.restFlapT0=-1e9; s.sways[s.i].impV += 0.03; markHere(s.i); }
   }
 }
 buildGarden();
