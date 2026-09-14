@@ -89,36 +89,25 @@ section.block{padding-block:clamp(48px,7vw,96px)}
 .sec-head .link{font-size:14px;font-weight:600;color:var(--plum);border-bottom:1.5px solid currentColor;padding-bottom:2px}
 
 /* ---------- Hero garden ---------- */
-.hero{background:var(--butter);position:relative;overflow:hidden;color:var(--plum-deep)}
-.garden-wrap{position:relative;padding-block:40px 0}
-.garden-copy{position:absolute;left:var(--gutter);top:40px;width:min(36%,440px);z-index:2}
-.garden-copy .wm{width:min(100%,280px);margin-top:12px}
-.hero .lede{max-width:34ch;font-size:clamp(16px,1.3vw,18px);line-height:1.45;margin-top:18px;color:var(--plum-deep)}
-.hero .ctas{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
-.hero .ctas .btn{border-color:var(--plum);color:var(--plum)}
-.hero .ctas .btn.solid{color:var(--white)}
-.hero .hint{margin-top:16px;font-size:13px;color:var(--plum)}
-.hero .hint .bf{width:20px}
-.garden-stage{position:relative;width:100%;line-height:0}
-.garden-stage svg{width:100%;height:auto;display:block;overflow:visible}
-.garden-stage .flower{cursor:pointer}
-.garden-stage .flower .head{transition:transform .25s;transform-box:fill-box;transform-origin:center}
-.garden-stage .flower:hover .head,.garden-stage .flower:focus-visible .head{transform:scale(1.08)}
-.garden-stage .flower .lbl{font-family:var(--body);font-weight:600;font-size:13px;fill:var(--plum-deep)}
-.garden-stage .flower .lbl-sub{font-family:var(--body);font-size:11px;fill:var(--plum)}
-.garden-stage .flower .pill{fill:var(--white);stroke:var(--plum-line);transition:fill .2s,stroke .2s}
-.garden-stage .flower:hover .pill,.garden-stage .flower.here .pill{fill:var(--butter-pale);stroke:var(--plum)}
-.garden-stage .flower:focus-visible{outline:none}
-.garden-stage .flower:focus-visible .pill{stroke:var(--plum);stroke-width:2}
-.hero-marquee{border-top:1.5px solid var(--plum);overflow:hidden;white-space:nowrap;font-family:var(--display);text-transform:uppercase;letter-spacing:.12em;font-size:14px;padding:10px 0;color:var(--plum);position:relative;z-index:2;background:var(--butter)}
-.hero-marquee div{display:inline-block;animation:marq 40s linear infinite}
-.hero-marquee span{margin-right:48px}
-@keyframes marq{to{transform:translateX(-50%)}}
-@media (max-width:900px){
-  .garden-wrap{padding-top:32px}
-  .garden-copy{position:static;width:100%;margin-bottom:8px}
-  .garden-copy .wm{width:min(100%,300px)}
-}
+.hero{position:relative;overflow:hidden;background:#FFF1C9;line-height:0}
+.garden-stage{position:relative;width:100%}
+.garden-stage svg{width:100%;height:auto;display:block}
+.plant{cursor:pointer;outline:none}
+.plant .tag{opacity:0;transition:opacity .35s ease .1s,transform .45s cubic-bezier(.2,.8,.2,1) .1s;transform:translateY(8px);transform-box:fill-box;pointer-events:none}
+.plant.here .tag,.plant:focus-visible .tag{opacity:1;transform:none}
+.plant .tl{font-family:var(--body);font-weight:600;font-size:15px;fill:var(--plum-deep)}
+.plant .ts{font-family:var(--body);font-size:12px;fill:var(--plum)}
+.plant:focus-visible .head{filter:drop-shadow(0 0 0 3px rgba(148,87,119,.5))}
+.leaf{animation:leafSway 3.6s ease-in-out infinite alternate}
+.leaf:nth-of-type(2n){animation-duration:4.3s;animation-delay:-1.2s}
+@keyframes leafSway{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
+.grass{animation:grassSway 2.8s ease-in-out infinite alternate}
+@keyframes grassSway{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
+.cloud{animation:drift 90s linear infinite}
+.cloud:nth-of-type(2){animation-duration:120s;animation-delay:-40s}
+.cloud:nth-of-type(3){animation-duration:150s;animation-delay:-70s}
+@keyframes drift{from{transform:translateX(-60px)}to{transform:translateX(60px)}}
+@media (prefers-reduced-motion:reduce){.leaf,.grass,.cloud{animation:none}}
 
 /* ---------- Book cards / rails ---------- */
 .rail{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:12px;margin-inline:calc(var(--gutter) * -1);padding-inline:var(--gutter);scrollbar-width:thin;scrollbar-color:var(--plum-line) transparent}
@@ -363,9 +352,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast .bf{width:22px;--flap:.5s}
 
-@media (prefers-reduced-motion:reduce){
-  .hero-marquee div{animation:none!important}
-}
+
 </style>
 </head>
 <body>
@@ -400,20 +387,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
 <!-- ================= HOME / ABOUT ================= -->
 <section class="view" data-view="home">
   <div class="hero">
-    <div class="wrap garden-wrap">
-      <div class="garden-copy">
-        <p class="eyebrow">A bookshop in Bangkok · Est. 2026</p>
-        <h1 class="wm" data-wordmark="stacked" aria-label="Today We Read"></h1>
-        <p class="lede">A tightly curated bookshop where fun, creativity and design meet — for readers of all ages.</p>
-        <div class="ctas">
-          <a class="btn solid" href="#books">Shop new releases</a>
-          <a class="btn" href="#events">This month's exhibition</a>
-        </div>
-        <p class="hint">Follow the butterfly — it lands on shelves you can open.</p>
-      </div>
-      <div class="garden-stage" id="garden" aria-label="Browse the shelves"></div>
-    </div>
-    <div class="hero-marquee" aria-hidden="true"><div><span>Curation with a point of view</span><span>Design-first thinking</span><span>Guaranteed enjoyment</span><span>Cross-generational curiosity</span><span>Curation with a point of view</span><span>Design-first thinking</span><span>Guaranteed enjoyment</span><span>Cross-generational curiosity</span></div></div>
+    <div class="garden-stage" id="garden"></div>
   </div>
 
   <section class="block">
@@ -698,7 +672,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
     </div>
     <div class="ft-bottom">
       <span>© Today We Read — All Rights Reserved</span>
-      <span>Design prototype v1.2 · Shopify storefront · Bangkok</span>
+      <span>Design prototype v1.3 · Shopify storefront · Bangkok</span>
     </div>
   </div>
 </footer>
@@ -707,7 +681,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
 <aside class="drawer" id="drawer" aria-label="Product details"><div class="inner" id="drawerInner"></div></aside>
 <div class="toast" id="toast" role="status" aria-live="polite"><span class="bf" data-butterfly="idle"></span><span id="toastText"></span></div>
 
-<script src="app.js?v=1.2.1"></script>
+<script src="app.js?v=1.3"></script>
 
 </body>
 </html>
