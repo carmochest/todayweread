@@ -102,13 +102,11 @@ section.block{padding-block:clamp(48px,7vw,96px)}
 .leaf{animation:leafSway 3.6s ease-in-out infinite alternate;transform-box:view-box}
 .leaf:nth-of-type(2n){animation-duration:4.3s;animation-delay:-1.2s}
 @keyframes leafSway{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
-.grass{animation:grassSway 2.8s ease-in-out infinite alternate}
-@keyframes grassSway{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
 .cloud{animation:drift 90s linear infinite}
 .cloud:nth-of-type(2){animation-duration:120s;animation-delay:-40s}
 .cloud:nth-of-type(3){animation-duration:150s;animation-delay:-70s}
 @keyframes drift{from{transform:translateX(-60px)}to{transform:translateX(60px)}}
-@media (prefers-reduced-motion:reduce){.leaf,.grass,.cloud{animation:none}}
+@media (prefers-reduced-motion:reduce){.leaf,.cloud{animation:none}}
 
 /* ---------- Book cards / rails ---------- */
 .rail{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:12px;margin-inline:calc(var(--gutter) * -1);padding-inline:var(--gutter);scrollbar-width:thin;scrollbar-color:var(--plum-line) transparent}
@@ -673,7 +671,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
     </div>
     <div class="ft-bottom">
       <span>© Today We Read — All Rights Reserved</span>
-      <span>Design prototype v1.6 · Shopify storefront · Bangkok</span>
+      <span>Design prototype v1.7 · Shopify storefront · Bangkok</span>
     </div>
   </div>
 </footer>
@@ -682,7 +680,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
 <aside class="drawer" id="drawer" aria-label="Product details"><div class="inner" id="drawerInner"></div></aside>
 <div class="toast" id="toast" role="status" aria-live="polite"><span class="bf" data-butterfly="idle"></span><span id="toastText"></span></div>
 
-<script src="app.js?v=1.6"></script>
+<script src="app.js?v=1.7"></script>
 
 </body>
 </html>

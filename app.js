@@ -15,17 +15,18 @@ const lerpPts = (a,b,t) => { let d=""; for(let i=0;i<a.length;i+=2){ d += (i?" "
 const ptsPath = p => { let d=""; for(let i=0;i<p.length;i+=2){ d += (i?" ":"M")+p[i]+" "+p[i+1]; } return d+"Z"; };
 function butterflyMarkup(){
   const P="#945777", Y="#FFD468";
-  return `<path class="bfn" fill="${P}" fill-rule="evenodd"/>`
+  return `<path class="bfw" fill="#FFFFFF"/><path class="bfn" fill="${P}" fill-rule="evenodd"/>`
        + M3.ant.map(()=>`<path class="bat" fill="${P}"/>`).join("")
        + M3.covers.map(()=>`<path class="bcv" fill="${Y}" stroke="${P}" stroke-width="30" stroke-linejoin="round"/>`).join("")
        + M3.face.map(()=>`<path class="bfc" fill="${P}"/>`).join("");
 }
 function bindButterfly(g){
-  const fan=g.querySelector(".bfn"), ant=[...g.querySelectorAll(".bat")], cov=[...g.querySelectorAll(".bcv")], fac=[...g.querySelectorAll(".bfc")];
+  const fan=g.querySelector(".bfn"), fanW=g.querySelector(".bfw"), ant=[...g.querySelectorAll(".bat")], cov=[...g.querySelectorAll(".bcv")], fac=[...g.querySelectorAll(".bfc")];
   let last=-1;
   return function set(t){
     if(Math.abs(t-last)<0.003) return; last=t;
     fan.setAttribute("d", M3.fan.map(f=>lerpPts(f.a,f.b,t)).join(""));
+    fanW.setAttribute("d", M3.fan.slice(1).map(f=>lerpPts(f.a,f.b,t)).join(""));
     M3.ant.forEach((f,i)=>ant[i].setAttribute("d", lerpPts(f.a,f.b,t)));
     M3.covers.forEach((f,i)=>cov[i].setAttribute("d", lerpPts(f.a,f.b,t)));
     M3.face.forEach((f,i)=>fac[i].setAttribute("d", lerpPts(f.a,f.b,t)));
@@ -76,7 +77,7 @@ const LAYOUTS = {
 const HEADS = {
   // each returns {svg, top} — svg drawn with origin at head centre, stem attaches at (0, +r); top = y of the perch point (negative = above centre)
   daisy(){ const p=Array.from({length:9},(_,k)=>`<ellipse cx="0" cy="-40" rx="17" ry="34" fill="${C.butter}" stroke="${C.butterL}" stroke-width="6" transform="rotate(${k*40})"/>`).join(""); return {svg:p+`<circle r="24" fill="${C.plum}" stroke="${C.plumL}" stroke-width="6"/>`, top:-70, r:60}; },
-  tulip(){ return {svg:`<path d="M-42 26 C-56 -34 -20 -66 0 -26 C20 -66 56 -34 42 26 Q0 46 -42 26Z" fill="${C.blush}" stroke="${C.blushL}" stroke-width="6" stroke-linejoin="round"/><path d="M0 -26 V22" stroke="${C.blushL}" stroke-width="6" stroke-linecap="round"/>`, top:-56, r:44}; },
+  tulip(){ return {svg:`<path d="M-40 20 C-46 -20 -30 -52 -18 -52 C-8 -52 -4 -40 0 -30 C4 -40 8 -52 18 -52 C30 -52 46 -20 40 20 C30 34 -30 34 -40 20Z" fill="${C.blush}" stroke="${C.blushL}" stroke-width="6" stroke-linejoin="round"/><path d="M0 -30 V26" stroke="${C.blushL}" stroke-width="5" stroke-linecap="round"/>`, top:-54, r:40}; },
   sunflower(){ const p=Array.from({length:14},(_,k)=>`<path d="M0 -34 C14 -50 14 -78 0 -84 C-14 -78 -14 -50 0 -34Z" fill="${C.plum}" stroke="${C.plumL}" stroke-width="6" stroke-linejoin="round" transform="rotate(${k*25.7})"/>`).join(""); return {svg:p+`<circle r="38" fill="${C.butter}" stroke="${C.butterL}" stroke-width="6"/><circle r="16" fill="none" stroke="${C.butterL}" stroke-width="6"/>`, top:-84, r:84}; },
   lupin(){ const p=Array.from({length:6},(_,k)=>`<ellipse cx="${k%2?18:-18}" cy="${-k*30}" rx="24" ry="19" fill="${C.lav}" stroke="${C.lavL}" stroke-width="6"/>`).join(""); return {svg:p+`<ellipse cy="-176" rx="14" ry="18" fill="${C.lavL}"/>`, top:-194, r:20}; },
   poppy(){ return {svg:`<path d="M-50 -6 C-54 -50 -18 -62 0 -40 C18 -62 54 -50 50 -6 C46 26 -46 26 -50 -6Z" fill="${C.coral}" stroke="${C.coralL}" stroke-width="6" stroke-linejoin="round"/><circle cy="-2" r="16" fill="${C.ink}"/>`, top:-58, r:30}; },
@@ -88,13 +89,13 @@ function scallop(cx, cy, w, h, n, fill, stroke){  // a bush/cloud: row of circle
   for(let i=0;i<=n;i++){ const x=cx-w/2+i*step, y=cy-(i%2?r*.45:0); a+=`<circle cx="${x}" cy="${y}" r="${r+6}" fill="${stroke}"/>`; b+=`<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}"/>`; }
   return `<g>${a}<rect x="${cx-w/2}" y="${cy}" width="${w}" height="${h*2}" fill="${stroke}"/>${b}<rect x="${cx-w/2}" y="${cy+6}" width="${w}" height="${h*2}" fill="${fill}"/></g>`;
 }
-function cloud(cx,cy,s){ return `<g class="cloud" style="--cx:${cx}px">${scallop(cx,cy,110*s,46*s,4,C.cloud,C.cloudL).replace(/<rect[^>]*>/g,"")}<rect x="${cx-55*s}" y="${cy}" width="${110*s}" height="${23*s}" fill="${C.cloud}"/><path d="M${cx-55*s} ${cy+23*s} H${cx+55*s}" stroke="${C.cloudL}" stroke-width="6" stroke-linecap="round"/></g>`; }
+function cloud(cx,cy,s){ const cs=[[0,0,30],[30,-12,26],[-30,-6,24],[58,4,18],[-56,6,16]]; const st=cs.map(([dx,dy,r])=>`<circle cx="${cx+dx*s}" cy="${cy+dy*s}" r="${(r+6)*s}" fill="${C.cloudL}"/>`).join(""), fi=cs.map(([dx,dy,r])=>`<circle cx="${cx+dx*s}" cy="${cy+dy*s}" r="${r*s}" fill="${C.cloud}"/>`).join(""); return `<g class="cloud">${st}${fi}</g>`; }
 function plantSVG(p, i, L){
   const [x,h,tilt]=L.pos[i], G=L.G, head=HEADS[p.kind](), top=G-h;
   const bend = (i%2?1:-1)*22;
   const stem=`<path d="M${x} ${G} C${x} ${G-h*.45} ${x+bend} ${G-h*.65} ${x} ${top+head.r-8}" fill="none" stroke="${C.stemL}" stroke-width="22" stroke-linecap="round"/>
               <path d="M${x} ${G} C${x} ${G-h*.45} ${x+bend} ${G-h*.65} ${x} ${top+head.r-8}" fill="none" stroke="${C.stem}" stroke-width="12" stroke-linecap="round"/>`;
-  const leaf=(ly,dir,sz)=>`<g class="leaf" style="transform-origin:${x}px ${ly}px"><path d="M${x} ${ly} c${dir*sz*.5} ${-sz*.9} ${dir*sz*1.5} ${-sz*.7} ${dir*sz*1.7} ${sz*.1} c${-dir*sz*.7} ${sz*.7} ${-dir*sz*1.4} ${sz*.5} ${-dir*sz*1.7} ${-sz*.1}Z" fill="${C.leaf}" stroke="${C.leafL}" stroke-width="6" stroke-linejoin="round"/><path d="M${x} ${ly} l${dir*sz*1.3} ${-sz*.05}" stroke="${C.leafL}" stroke-width="5" stroke-linecap="round"/></g>`;
+  const leaf=(ly,dir,sz)=>`<g class="leaf" style="transform-origin:${x}px ${ly}px"><path d="M${x} ${ly} C${x+dir*sz*.4} ${ly-sz*.8} ${x+dir*sz*1.5} ${ly-sz*.75} ${x+dir*sz*1.75} ${ly-sz*.15} C${x+dir*sz*1.4} ${ly+sz*.45} ${x+dir*sz*.5} ${ly+sz*.4} ${x} ${ly}Z" fill="${C.leaf}" stroke="${C.leafL}" stroke-width="6" stroke-linejoin="round"/><path d="M${x+dir*sz*.15} ${ly-sz*.05} Q${x+dir*sz*.9} ${ly-sz*.35} ${x+dir*sz*1.5} ${ly-sz*.25}" fill="none" stroke="${C.leafL}" stroke-width="4" stroke-linecap="round"/></g>`;
   const leaves = leaf(G-h*.3, -1, 46) + leaf(G-h*.52, 1, 40) + (h>330 ? leaf(G-h*.72,-1,34) : "");
   const w = Math.max(p.label.length*9.4, p.sub.length*7)+34, W=L.vb[2];
   const right = x+head.r+w/2+24 < W-10;          // put the tag on whichever side has room
@@ -116,16 +117,13 @@ function buildGarden(){
     <path d="M0 ${G-80} C${W*.15} ${G-150} ${W*.35} ${G-60} ${W*.5} ${G-120} S${W*.8} ${G-40} ${W} ${G-110} V${G} H0Z" fill="${C.hillMid}" stroke="${C.hillMidL}" stroke-width="6"/>`;
   const bushes = wide ? scallop(220,G-30,300,70,5,C.bush,C.bushL)+scallop(760,G-22,380,60,6,C.bush,C.bushL)+scallop(1330,G-34,340,76,5,C.bush,C.bushL)
                       : scallop(180,G-26,300,64,5,C.bush,C.bushL)+scallop(620,G-30,320,70,5,C.bush,C.bushL);
-  const grass=Array.from({length:Math.round(W/46)},(_,k)=>{const gx=k*46+12, gh=12+((k*7)%3)*5; return `<path class="grass" style="transform-origin:${gx}px ${G}px;animation-delay:${-(k%7)*.4}s" d="M${gx} ${G} q3 -${gh} 9 -${gh+6} M${gx+6} ${G} q-2 -${gh*.6} -8 -${gh*.8}" fill="none" stroke="${C.bushL}" stroke-width="4" stroke-linecap="round"/>`}).join("");
-  const backPlants = wide ? `<g opacity=".55">${[[300,150],[960,170],[1560,140],[720,120]].map(([bx,bh],k)=>`<path d="M${bx} ${G} v-${bh}" stroke="${C.hillMidL}" stroke-width="10" stroke-linecap="round"/><circle cx="${bx}" cy="${G-bh-14}" r="18" fill="${[C.pale,C.lav,C.blush,C.butter][k]}" stroke="${C.hillMidL}" stroke-width="5"/>`).join("")}</g>` : "";
   garden.innerHTML = `<svg viewBox="${L.vb.join(" ")}" role="group" aria-label="Browse the shelves">
     <rect width="${W}" height="${H}" fill="${C.sky}"/>
     <circle cx="${wide?W*.91:W*.84}" cy="${wide?140:110}" r="${wide?80:56}" fill="${C.sun}" stroke="${C.sunL}" stroke-width="6"/>
-    ${clouds}${hills}${backPlants}${bushes}
+    ${clouds}${hills}${bushes}
     <rect y="${G}" width="${W}" height="${H-G}" fill="${C.ground}"/>
     <path d="M0 ${G} H${W}" stroke="${C.groundL}" stroke-width="6"/>
-    ${grass}
-    ${PLANTS.map((p,i)=>plantSVG(p,i,L)).join("")}
+        ${PLANTS.map((p,i)=>plantSVG(p,i,L)).join("")}
     <g id="bfly"><g id="bflyInner">${butterflyMarkup()}</g></g>
   </svg>`;
   const plants=[...garden.querySelectorAll(".plant")];

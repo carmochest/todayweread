@@ -8,9 +8,9 @@ const VB="380 280 1240 1440", P="#945777", Y="#FFD468";
 const lerp=(a,b,t)=>{let d="";for(let i=0;i<a.length;i+=2){d+=(i?" ":"M")+((1-t)*a[i]+t*b[i]).toFixed(1)+" "+((1-t)*a[i+1]+t*b[i+1]).toFixed(1);}return d+"Z";};
 const pp=p=>{let d="";for(let i=0;i<p.length;i+=2){d+=(i?" ":"M")+p[i]+" "+p[i+1];}return d+"Z";};
 const host=document.getElementById("bf");
-host.innerHTML='<svg viewBox="'+VB+'"><path class="f" fill="'+P+'" fill-rule="evenodd"/>'+M3.ant.map(()=>'<path class="a" fill="'+P+'"/>').join("")+M3.covers.map(()=>'<path class="c" fill="'+Y+'" stroke="'+P+'" stroke-width="30" stroke-linejoin="round"/>').join("")+M3.face.map(()=>'<path class="e" fill="'+P+'"/>').join("")+'</svg>';
-const q=c=>[...host.querySelectorAll("."+c)], f=q("f")[0],a=q("a"),c=q("c"),e=q("e");
-function set(t){f.setAttribute("d",M3.fan.map(s=>lerp(s.a,s.b,t)).join(""));M3.ant.forEach((s,i)=>a[i].setAttribute("d",lerp(s.a,s.b,t)));M3.covers.forEach((s,i)=>c[i].setAttribute("d",lerp(s.a,s.b,t)));M3.face.forEach((s,i)=>e[i].setAttribute("d",lerp(s.a,s.b,t)));}
+host.innerHTML='<svg viewBox="'+VB+'"><path class="w" fill="#fff"/><path class="f" fill="'+P+'" fill-rule="evenodd"/>'+M3.ant.map(()=>'<path class="a" fill="'+P+'"/>').join("")+M3.covers.map(()=>'<path class="c" fill="'+Y+'" stroke="'+P+'" stroke-width="30" stroke-linejoin="round"/>').join("")+M3.face.map(()=>'<path class="e" fill="'+P+'"/>').join("")+'</svg>';
+const q=c=>[...host.querySelectorAll("."+c)], f=q("f")[0],wp=q("w")[0],a=q("a"),c=q("c"),e=q("e");
+function set(t){f.setAttribute("d",M3.fan.map(s=>lerp(s.a,s.b,t)).join(""));wp.setAttribute("d",M3.fan.slice(1).map(s=>lerp(s.a,s.b,t)).join(""));M3.ant.forEach((s,i)=>a[i].setAttribute("d",lerp(s.a,s.b,t)));M3.covers.forEach((s,i)=>c[i].setAttribute("d",lerp(s.a,s.b,t)));M3.face.forEach((s,i)=>e[i].setAttribute("d",lerp(s.a,s.b,t)));}
 const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
 (function frame(now){const u=(now%1400)/1400;set(ease(Math.sin(u*Math.PI)));requestAnimationFrame(frame);})(0);
 </script></body></html>
