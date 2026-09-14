@@ -89,7 +89,7 @@ function scallop(cx, cy, w, h, n, fill, stroke){  // a bush/cloud: row of circle
   for(let i=0;i<=n;i++){ const x=cx-w/2+i*step, y=cy-(i%2?r*.45:0); a+=`<circle cx="${x}" cy="${y}" r="${r+6}" fill="${stroke}"/>`; b+=`<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}"/>`; }
   return `<g>${a}<rect x="${cx-w/2}" y="${cy}" width="${w}" height="${h*2}" fill="${stroke}"/>${b}<rect x="${cx-w/2}" y="${cy+6}" width="${w}" height="${h*2}" fill="${fill}"/></g>`;
 }
-function cloud(cx,cy,s){ const cs=[[0,0,30],[30,-12,26],[-30,-6,24],[58,4,18],[-56,6,16]]; const st=cs.map(([dx,dy,r])=>`<circle cx="${cx+dx*s}" cy="${cy+dy*s}" r="${(r+6)*s}" fill="${C.cloudL}"/>`).join(""), fi=cs.map(([dx,dy,r])=>`<circle cx="${cx+dx*s}" cy="${cy+dy*s}" r="${r*s}" fill="${C.cloud}"/>`).join(""); return `<g class="cloud">${st}${fi}</g>`; }
+function cloud(cx,cy,s){ return `<g class="cloud"><path transform="translate(${cx} ${cy}) scale(${s})" d="M-70 18 C-92 18 -92 -14 -66 -16 C-64 -44 -26 -50 -12 -30 C0 -56 44 -52 48 -22 C74 -24 80 12 58 18Z" fill="${C.cloud}" stroke="${C.cloudL}" stroke-width="6" stroke-linejoin="round"/></g>`; }
 function plantSVG(p, i, L){
   const [x,h,tilt]=L.pos[i], G=L.G, head=HEADS[p.kind](), top=G-h;
   const bend = (i%2?1:-1)*22;
@@ -97,13 +97,13 @@ function plantSVG(p, i, L){
               <path d="M${x} ${G} C${x} ${G-h*.45} ${x+bend} ${G-h*.65} ${x} ${top+head.r-8}" fill="none" stroke="${C.stem}" stroke-width="12" stroke-linecap="round"/>`;
   const leaf=(ly,dir,sz)=>`<g class="leaf" style="transform-origin:${x}px ${ly}px"><path d="M${x} ${ly} C${x+dir*sz*.4} ${ly-sz*.8} ${x+dir*sz*1.5} ${ly-sz*.75} ${x+dir*sz*1.75} ${ly-sz*.15} C${x+dir*sz*1.4} ${ly+sz*.45} ${x+dir*sz*.5} ${ly+sz*.4} ${x} ${ly}Z" fill="${C.leaf}" stroke="${C.leafL}" stroke-width="6" stroke-linejoin="round"/><path d="M${x+dir*sz*.15} ${ly-sz*.05} Q${x+dir*sz*.9} ${ly-sz*.35} ${x+dir*sz*1.5} ${ly-sz*.25}" fill="none" stroke="${C.leafL}" stroke-width="4" stroke-linecap="round"/></g>`;
   const leaves = leaf(G-h*.3, -1, 46) + leaf(G-h*.52, 1, 40) + (h>330 ? leaf(G-h*.72,-1,34) : "");
-  const w = Math.max(p.label.length*9.4, p.sub.length*7)+34, W=L.vb[2];
+  const w = p.label.length*9.6+40, W=L.vb[2];
   const right = x+head.r+w/2+24 < W-10;          // put the tag on whichever side has room
   const tx = right ? x+head.r+20 : x-head.r-20-w;
-  const ty = top-22;
+  const ty = top-18;
   return `<a class="plant" data-plant="${i}" href="${p.href}" ${p.tab?`data-tab="${p.tab}"`:""} aria-label="${p.label} — ${p.sub}">
     <g class="sway" data-base="${x},${G}">${stem}${leaves}<g class="head" transform="translate(${x} ${top})">${head.svg}</g>
-      <g transform="translate(${tx} ${ty})"><g class="tag"><rect width="${w}" height="50" rx="25" fill="#fff" stroke="${C.plumL}" stroke-width="2"/><text x="${w/2}" y="22" text-anchor="middle" class="tl">${p.label}</text><text x="${w/2}" y="39" text-anchor="middle" class="ts">${p.sub}</text></g></g>
+      <g transform="translate(${tx} ${ty})"><g class="tag"><rect width="${w}" height="42" rx="21" fill="#fff" stroke="${C.plumL}" stroke-width="2"/><text x="${w/2}" y="27" text-anchor="middle" class="tl">${p.label}</text></g></g>
     </g></a>`;
 }
 const garden=document.getElementById("garden");
@@ -149,7 +149,7 @@ function gardenTick(now){
   const dt=Math.min(50, now-s.lastNow); s.lastNow=now;
   // wind on every plant (+ damped spring for landing impulse)
   for(const sw of s.sways){
-    sw.impV += (-sw.imp*0.012 - sw.impV*0.09)*dt*0.5; sw.imp += sw.impV*dt*0.06;
+    sw.impV += (-sw.imp*0.006 - sw.impV*0.14)*dt*0.5; sw.imp += sw.impV*dt*0.06;
     const a = REDUCED ? 0 : plantAngle(sw, now);
     sw.a=a; sw.g.setAttribute("transform",`rotate(${a.toFixed(3)} ${sw.bx} ${sw.by})`);
   }
@@ -168,7 +168,7 @@ function gardenTick(now){
       s.dur = 1500 + d*2.1;
       const lift = 110 + d*0.22;
       s.ctrl=[ {x:s.from.x+dir*d*0.18, y:s.from.y-lift}, {x:s.to.x-dir*d*0.22, y:Math.min(s.from.y,s.to.y)-lift*0.8} ];
-      sw.impV -= 0.9;                                    // push-off makes the plant spring
+      sw.impV -= 0.25;                                    // push-off makes the plant spring
       markHere(-1);
     }
   } else {
@@ -182,14 +182,14 @@ function gardenTick(now){
     // flapping: fast when climbing/accelerating, easing into a glide before landing
     const hz = u<0.12 ? 9 : u>0.82 ? 4.5 : 6.5 + Math.min(2, speed/900);
     s.flapPhase += hz*dt/1000;
-    const env = u>0.86 ? 1-(u-0.86)/0.14 : 1;
+    const env = u>0.78 ? 1-(u-0.78)/0.22 : 1;
     const flap = 0.5-0.5*Math.cos(s.flapPhase*6.283);
     const t = flap*env*0.85 + (1-env)*0.14;
     // the body rises on the downstroke and sinks on the upstroke; a little lateral flutter
     const bob = -Math.sin(s.flapPhase*6.283)*7*env, side = Math.sin(u*9.4)*8*Math.sin(u*Math.PI);
     const bank = Math.max(-16, Math.min(16, (vx/s.dur)*1000/40)) + (vy/s.dur)*1000/90;
     placeBf(bx+side, by+bob, bank + Math.sin(s.flapPhase*6.283)*2*env, t);
-    if(u>=1){ s.state="perch"; s.until=now+2800+Math.random()*2400; s.restFlapAt=now+700; s.restFlapT0=-1e9; s.sways[s.i].impV += 1.4; markHere(s.i); }
+    if(u>=1){ s.state="perch"; s.until=now+2800+Math.random()*2400; s.restFlapAt=now+700; s.restFlapT0=-1e9; s.sways[s.i].impV += 0.35; markHere(s.i); }
   }
 }
 buildGarden();
