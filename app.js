@@ -300,7 +300,12 @@ const TAG = {new:"New release", picks:"Book club pick", bestseller:"Bestseller",
 let cart = {}, wish = new Set();
 try{ cart = JSON.parse(localStorage.getItem("twr.cart")||"{}"); wish = new Set(JSON.parse(localStorage.getItem("twr.wish")||"[]")); }catch(e){}
 function save(){ try{ localStorage.setItem("twr.cart", JSON.stringify(cart)); localStorage.setItem("twr.wish", JSON.stringify([...wish])); }catch(e){} }
-const ALL = [...BOOKS, ...NONBOOKS];
+const TICKETS = [
+  {id:"t1a", ev:0, title:"Fold a River — origami workshop", session:"Sat 3 Oct · 11:00", cat:"Event ticket", price:350, tags:[], pattern:3, pal:3, ticket:true, format:"90 minutes · ages 5+", blurb:"Ninety minutes, one long strip of paper, and a river that ends up as a boat. Parents fold too."},
+  {id:"t1b", ev:0, title:"Fold a River — origami workshop", session:"Sat 3 Oct · 14:00", cat:"Event ticket", price:350, tags:[], pattern:3, pal:3, ticket:true, format:"90 minutes · ages 5+", blurb:"Ninety minutes, one long strip of paper, and a river that ends up as a boat. Parents fold too."},
+  {id:"t2a", ev:1, title:"Wall Label — reading & signing", session:"Thu 15 Oct · 19:00", cat:"Event ticket", price:0, tags:[], pattern:2, pal:1, ticket:true, format:"About an hour · free", blurb:"Ines Marchetti reads from her museum-caption novel, followed by a conversation about writing in fragments."}
+];
+const ALL = [...BOOKS, ...NONBOOKS, ...TICKETS];
 const find = id => ALL.find(x=>x.id===id);
 
 /* ---------- Card ---------- */
@@ -348,9 +353,9 @@ const EVENTS = {
 function evArt(e){ return cover({title:"",pattern:e.art,pal:e.pal}).replace(/<text[\s\S]*?<\/text>/g,"").replace('viewBox="0 0 300 400"','viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice"'); }
 const cur = EVENTS.current;
 document.getElementById("evCurrent").innerHTML = `<a class="ev-hero" href="#events" onclick="event.preventDefault();toast('Event detail page — ${esc(cur.title)}')"><svg class="art" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice">${evArt(cur).replace(/^<svg[^>]*>|<\/svg>$/g,"")}</svg><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(94,51,73,0) 8%,rgba(94,51,73,.55) 45%,rgba(94,51,73,.95))"></div><div class="body"><p class="eyebrow">Now on</p><h3 class="display">${cur.title}</h3><p>${cur.desc}</p><p class="when">${cur.when}</p></div></a>`;
-document.getElementById("evUpcoming").innerHTML = EVENTS.upcoming.map(e=>`<div class="ev-card"><div class="art">${evArt(e)}</div><div class="body"><span class="when">${e.when}</span><h3>${e.title}</h3><p>${e.desc}</p><button class="btn small solid" onclick="toast('Booking opens here — Shopify product or external link.')">Book a place</button></div></div>`).join("");
+document.getElementById("evUpcoming").innerHTML = EVENTS.upcoming.map(e=>`<div class="ev-card"><div class="art">${evArt(e)}</div><div class="body"><span class="when">${e.when}</span><h3>${e.title}</h3><p>${e.desc}</p><a class="btn small solid" href="#book" data-ev="${EVENTS.upcoming.indexOf(e)}">Book a place</a></div></div>`).join("");
 document.getElementById("evPast").innerHTML = EVENTS.past.map(e=>`<div class="item"><div class="art">${evArt(e)}</div><h4>${e.title}</h4><p>${e.desc}</p><span class="when">${e.when}</span></div>`).join("");
-document.getElementById("homeEvents").innerHTML = `<div class="ev-two" style="margin-top:0">${[cur, EVENTS.upcoming[0]].map((e,i)=>`<div class="ev-card"><div class="art">${evArt(e)}</div><div class="body"><span class="when">${i?e.when:"Now on · "+e.when}</span><h3>${e.title}</h3><p>${e.desc}</p><a class="btn small" href="#events">${i?"Book a place":"See the exhibition"}</a></div></div>`).join("")}</div>`;
+document.getElementById("homeEvents").innerHTML = `<div class="ev-two" style="margin-top:0">${[cur, EVENTS.upcoming[0]].map((e,i)=>`<div class="ev-card"><div class="art">${evArt(e)}</div><div class="body"><span class="when">${i?e.when:"Now on · "+e.when}</span><h3>${e.title}</h3><p>${e.desc}</p><a class="btn small" href="${i?"#book":"#events"}" ${i?'data-ev="0"':""}>${i?"Book a place":"See the exhibition"}</a></div></div>`).join("")}</div>`;
 
 /* ---------- Shop views ---------- */
 function shop(cfg){
@@ -420,13 +425,14 @@ function renderCart(){
   const n=lines.reduce((a,l)=>a+l.q,0);
   document.getElementById("cartCount").textContent=n;
   const el=document.getElementById("cartLines");
-  el.innerHTML = lines.map(l=>`<div class="line"><div class="cover">${cover(l.item)}</div><div><div class="t">${esc(l.item.title)}</div><div class="a">${l.item.author?esc(l.item.author)+" · ":""}${l.item.cat}</div><div class="qty"><button data-q="${l.item.id}" data-d="-1" aria-label="Decrease">−</button><span>${l.q}</span><button data-q="${l.item.id}" data-d="1" aria-label="Increase">+</button></div></div><div><div class="p">${THB(l.item.price*l.q)}</div><button class="rm" data-rm="${l.item.id}">Remove</button></div></div>`).join("");
+  el.innerHTML = lines.map(l=>`<div class="line"><div class="cover">${cover(l.item)}</div><div><div class="t">${esc(l.item.title)}</div><div class="a">${l.item.ticket?l.item.session+" · "+l.q+(l.q>1?" places":" place"):(l.item.author?esc(l.item.author)+" · ":"")+l.item.cat}</div><div class="qty"><button data-q="${l.item.id}" data-d="-1" aria-label="Decrease">−</button><span>${l.q}</span><button data-q="${l.item.id}" data-d="1" aria-label="Increase">+</button></div></div><div><div class="p">${THB(l.item.price*l.q)}</div><button class="rm" data-rm="${l.item.id}">Remove</button></div></div>`).join("");
   document.getElementById("cartEmpty").hidden = lines.length>0;
   document.getElementById("policyBox").style.display = lines.length?"":"none";
   const sub=lines.reduce((a,l)=>a+l.item.price*l.q,0);
-  const ship = sub===0?0 : sub>=1500?0:60;
+  const physical=lines.some(l=>!l.item.ticket);
+  const ship = !physical||sub===0?0 : sub>=1500?0:60;
   document.getElementById("sumItems").textContent=THB(sub);
-  document.getElementById("sumShip").textContent= ship?THB(ship):(sub?"Free":"฿0");
+  document.getElementById("sumShip").textContent= ship?THB(ship):(physical?"Free":"—");
   document.getElementById("sumTotal").textContent=THB(sub+ship);
   document.getElementById("checkoutBtn").disabled = !lines.length;
 }
@@ -441,7 +447,7 @@ function openProduct(id){
     <span class="eyebrow">${i.cat}${i.tags.find(t=>TAG[t])?" · "+TAG[i.tags.find(t=>TAG[t])]:""}</span>
     <h2>${esc(i.title)}</h2>${i.author?`<p class="author">${esc(i.author)}</p>`:""}
     <p class="price">${THB(i.price)}</p>
-    <div class="spec"><b>Format</b><span>${i.format}</span><b>Availability</b><span>In stock · ships from Bangkok</span><b>Delivery</b><span>฿60 Bangkok · free over ฿1,500</span></div>
+    <div class="spec">${i.ticket?`<b>Session</b><span>${i.session}</span><b>Format</b><span>${i.format}</span>`:`<b>Format</b><span>${i.format}</span><b>Availability</b><span>In stock · ships from Bangkok</span><b>Delivery</b><span>฿60 Bangkok · free over ฿1,500</span>`}</div>
     <p class="desc">${i.blurb}</p>
     <div class="actions"><button class="btn solid" data-add="${i.id}">Add to cart</button><button class="btn" data-wish="${i.id}">${wish.has(i.id)?"Saved to wishlist":"Add to wishlist"}</button></div>
     <p class="note">Wishlist needs a member account. Returns accepted only for wrong or damaged items — see the exchange &amp; refund policy.</p>
@@ -463,15 +469,110 @@ document.addEventListener("click", e=>{
   const r=t.closest("[data-rm]"); if(r){ delete cart[r.dataset.rm]; save(); renderCart(); return; }
   const tb=t.closest("[data-tab]"); if(tb){ pendingTab=tb.dataset.tab; }
   const gl=t.closest("[data-open-later]"); if(gl){ pendingOpen=gl.dataset.openLater; }
+  const ev=t.closest("[data-ev]"); if(ev){ pendingEv=+ev.dataset.ev; }
   if(t.closest("#drawerClose")) closeDrawer();
 });
 document.getElementById("checkoutBtn").addEventListener("click", ()=>{
   if(!document.getElementById("ackPolicy").checked){ toast("Please accept the exchange & refund policy first."); document.getElementById("ackPolicy").focus(); return; }
-  toast("Handing over to Shopify Checkout (card / PromptPay)…");
+  location.hash="#payment";
 });
 
+/* ---------- Payment page ---------- */
+const PAY={method:"card", ship:"bkk"};
+function shipCost(sub, physical){ if(!physical) return 0; if(PAY.ship==="pickup") return 0; if(sub>=1500) return 0; return PAY.ship==="th"?90:60; }
+function renderPayment(){
+  const lines=cartItems(); if(!lines.length){ location.hash="#cart"; return; }
+  const physical=lines.some(l=>!l.item.ticket), sub=lines.reduce((a,l)=>a+l.item.price*l.q,0), ship=shipCost(sub,physical);
+  document.getElementById("deliveryBox").hidden=!physical;
+  document.getElementById("ticketNote").hidden=!lines.some(l=>l.item.ticket);
+  document.getElementById("addrFields").style.display = PAY.ship==="pickup"?"none":"";
+  document.querySelector('[data-ship="bkk"]').textContent = sub>=1500?"Free":"฿60";
+  document.querySelector('[data-ship="th"]').textContent = sub>=1500?"Free":"฿90";
+  document.getElementById("paySummaryLines").innerHTML = lines.map(l=>`<div class="row" style="font-size:13.5px;color:var(--ink-soft)"><span>${esc(l.item.title)}${l.item.ticket?" · "+l.item.session:""} × ${l.q}</span><span>${l.item.price?THB(l.item.price*l.q):"Free"}</span></div>`).join("");
+  document.getElementById("paySub").textContent=THB(sub);
+  document.getElementById("payShip").textContent= physical ? (ship?THB(ship):"Free") : "—";
+  document.getElementById("payTotal").textContent=THB(sub+ship);
+  document.getElementById("payBtn").textContent = sub+ship>0 ? `Pay ${THB(sub+ship)}` : "Confirm booking";
+  document.getElementById("payCard").hidden = PAY.method!=="card";
+  document.getElementById("payPP").hidden = PAY.method!=="promptpay";
+  document.querySelectorAll("[data-pay]").forEach(b=>b.setAttribute("aria-selected", b.dataset.pay===PAY.method));
+}
+document.getElementById("shipChoice").addEventListener("change", e=>{ PAY.ship=e.target.value; renderPayment(); });
+document.querySelectorAll("[data-pay]").forEach(b=>b.addEventListener("click", ()=>{ PAY.method=b.dataset.pay; renderPayment(); }));
+// live card preview + light formatting
+const cardNum=document.getElementById("cardNum"), cardExp=document.getElementById("cardExp"), cardName=document.getElementById("cardName");
+cardNum.addEventListener("input", ()=>{ const v=cardNum.value.replace(/\D/g,"").slice(0,16); cardNum.value=v.replace(/(.{4})/g,"$1 ").trim(); document.getElementById("cardPreviewNum").textContent=(v.padEnd(16,"•").match(/.{1,4}/g)||[]).join(" "); });
+cardExp.addEventListener("input", ()=>{ const v=cardExp.value.replace(/\D/g,"").slice(0,4); cardExp.value=v.length>2?v.slice(0,2)+" / "+v.slice(2):v; document.getElementById("cardPreviewExp").textContent=cardExp.value||"MM / YY"; });
+cardName.addEventListener("input", ()=>{ document.getElementById("cardPreviewName").textContent=(cardName.value||"NAME ON CARD").toUpperCase(); });
+// placeholder QR pattern (deterministic, decorative)
+(function(){ let seed=11; const r=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;}; let d=""; const eye=(x,y)=>`<rect x="${x}" y="${y}" width="7" height="7" fill="#2B1A25"/><rect x="${x+1}" y="${y+1}" width="5" height="5" fill="#fff"/><rect x="${x+2}" y="${y+2}" width="3" height="3" fill="#2B1A25"/>`;
+  for(let y=0;y<21;y++)for(let x=0;x<21;x++){ const inEye=(x<8&&y<8)||(x>12&&y<8)||(x<8&&y>12); if(!inEye&&r()>0.55) d+=`<rect x="${x}" y="${y}" width="1" height="1" fill="#2B1A25"/>`; }
+  document.getElementById("qrSvg").innerHTML=d+eye(0,0)+eye(14,0)+eye(0,14); })();
+document.getElementById("payBtn").addEventListener("click", ()=>{
+  const name=document.getElementById("payName"), email=document.getElementById("payEmail");
+  if(!name.value.trim()){ toast("Please add your name."); name.focus(); return; }
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.value)){ toast("Please add a valid email for your receipt."); email.focus(); return; }
+  const lines=cartItems(); const physical=lines.some(l=>!l.item.ticket), sub=lines.reduce((a,l)=>a+l.item.price*l.q,0), ship=shipCost(sub,physical);
+  if(physical && PAY.ship!=="pickup" && !document.getElementById("payAddr").value.trim()){ toast("Please add a delivery address."); document.getElementById("payAddr").focus(); return; }
+  if(PAY.method==="card" && sub+ship>0 && cardNum.value.replace(/\s/g,"").length<16){ toast("Please enter a card number (any 16 digits for this preview)."); cardNum.focus(); return; }
+  const no="#TWR-"+(1100+Math.floor(Math.random()*900));
+  const tickets=lines.filter(l=>l.item.ticket);
+  document.getElementById("confirmText").textContent = (sub+ship>0?`Order ${no} is paid. We've emailed your receipt to ${email.value}`:`Booking ${no} is confirmed. We've emailed ${email.value}`) + (tickets.length?" with your e-tickets.":".") + (physical?(PAY.ship==="pickup"?" Your books will be ready to collect within 24 hours.":` Your books ship ${PAY.ship==="th"?"in 2–4":"in 1–2"} business days.`):"");
+  document.getElementById("confirmOrder").innerHTML = lines.map(l=>`<div class="row"><span>${esc(l.item.title)}${l.item.ticket?" · "+l.item.session:""} × ${l.q}</span><span>${l.item.price?THB(l.item.price*l.q):"Free"}</span></div>`).join("") + (physical?`<div class="row"><span>Delivery</span><span>${ship?THB(ship):"Free"}</span></div>`:"") + `<div class="row"><span>Total paid</span><span>${THB(sub+ship)}</span></div>`;
+  cart={}; save(); renderCart(); document.getElementById("ackPolicy").checked=false;
+  location.hash="#confirmation";
+});
+
+/* ---------- Book a place ---------- */
+const BK={ev:0, session:0, places:2};
+const EVSESS=[[TICKETS[0],TICKETS[1]],[TICKETS[2]]];
+function renderBooking(){
+  const evs=EVENTS.upcoming;
+  document.getElementById("evPick").innerHTML = evs.map((e,i)=>`<label><input type="radio" name="bkev" value="${i}" ${i===BK.ev?"checked":""}><div class="art">${evArt(e)}</div><div class="b"><b>${e.title}</b><span>${e.when}</span></div></label>`).join("");
+  const sess=EVSESS[BK.ev]; if(BK.session>=sess.length) BK.session=0;
+  document.getElementById("sessionChoice").innerHTML = sess.map((t,i)=>`<label><input type="radio" name="bksess" value="${i}" ${i===BK.session?"checked":""}><span>${t.session}<small>${t.format}</small></span><span class="amt">${t.price?THB(t.price)+" / place":"Free"}</span></label>`).join("");
+  const t=sess[BK.session];
+  document.getElementById("plCount").textContent=BK.places;
+  document.getElementById("bkSumEvent").textContent=t.title;
+  document.getElementById("bkSumSession").textContent=`${t.session} · ${BK.places} ${BK.places>1?"places":"place"}`;
+  document.getElementById("bkSumPrice").textContent=t.price?`${BK.places} × ${THB(t.price)}`:"";
+  document.getElementById("bkSumTotal").textContent=THB(t.price*BK.places);
+  document.getElementById("bkAdd").textContent = t.price ? "Add to bag & check out" : "Reserve places";
+}
+document.getElementById("evPick").addEventListener("change", e=>{ BK.ev=+e.target.value; BK.session=0; renderBooking(); });
+document.getElementById("sessionChoice").addEventListener("change", e=>{ BK.session=+e.target.value; renderBooking(); });
+document.getElementById("plMinus").addEventListener("click", ()=>{ BK.places=Math.max(1,BK.places-1); renderBooking(); });
+document.getElementById("plPlus").addEventListener("click", ()=>{ BK.places=Math.min(8,BK.places+1); renderBooking(); });
+document.getElementById("bkAdd").addEventListener("click", ()=>{
+  const t=EVSESS[BK.ev][BK.session];
+  cart[t.id]=(cart[t.id]||0)+BK.places; save(); renderCart();
+  const n=document.getElementById("bkName").value, em=document.getElementById("bkEmail").value;
+  if(n) document.getElementById("payName").value=n; if(em) document.getElementById("payEmail").value=em;
+  toast(`${BK.places} ${BK.places>1?"places":"place"} added — ${t.session}`);
+  location.hash="#cart";
+});
+
+/* ---------- Search ---------- */
+const sBg=document.getElementById("searchBg"), sPanel=document.getElementById("searchPanel"), sInput=document.getElementById("searchInput"), sRes=document.getElementById("searchResults"), sHint=document.getElementById("searchHint");
+function openSearch(){ sBg.classList.add("open"); sPanel.classList.add("open"); setTimeout(()=>sInput.focus(),50); renderSearch(); }
+function closeSearch(){ sBg.classList.remove("open"); sPanel.classList.remove("open"); }
+function renderSearch(){
+  const q=sInput.value.trim().toLowerCase();
+  if(!q){ sRes.innerHTML=""; sHint.hidden=false; return; }
+  const hits=[...BOOKS,...NONBOOKS].filter(i=>(i.title+" "+(i.author||"")+" "+i.cat).toLowerCase().includes(q)).slice(0,8);
+  sHint.hidden=true;
+  sRes.innerHTML = hits.length ? hits.map(i=>`<button class="sr" type="button" data-open="${i.id}"><div class="cover">${cover(i)}</div><div><div class="t">${esc(i.title)}</div><div class="s">${i.author?esc(i.author)+" · ":""}${i.cat}</div></div><div class="p">${THB(i.price)}</div></button>`).join("") + `<button class="sr" type="button" id="searchAll" style="grid-template-columns:1fr;color:var(--plum);font-weight:600">See all results for “${esc(sInput.value.trim())}” →</button>` : `<div class="empty" style="padding:24px 0">Nothing matches “${esc(sInput.value.trim())}” — try an author's surname or a category.</div>`;
+}
+document.getElementById("searchBtn").addEventListener("click", openSearch);
+sBg.addEventListener("click", closeSearch);
+sInput.addEventListener("input", renderSearch);
+sInput.addEventListener("keydown", e=>{ if(e.key==="Enter"){ goSearchAll(); } });
+function goSearchAll(){ const q=sInput.value.trim(); closeSearch(); const inp=document.getElementById("bookSearch"); bookShop.setTab("all"); inp.value=q; inp.dispatchEvent(new Event("input")); location.hash="#books"; }
+sRes.addEventListener("click", e=>{ if(e.target.closest("#searchAll")) goSearchAll(); else if(e.target.closest("[data-open]")) closeSearch(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeSearch(); if((e.metaKey||e.ctrlKey)&&e.key==="k"){ e.preventDefault(); openSearch(); } });
+
 /* ---------- Routing ---------- */
-let pendingTab=null, pendingOpen=null;
+let pendingTab=null, pendingOpen=null, pendingEv=null;
 const views=[...document.querySelectorAll(".view")];
 function route(){
   const h=(location.hash||"#home").slice(1);
@@ -482,7 +583,10 @@ function route(){
   if(name==="books" && pendingTab){ bookShop.setTab(pendingTab); pendingTab=null; }
   if(name==="nonbooks" && pendingOpen){ const id=pendingOpen; pendingOpen=null; setTimeout(()=>openProduct(id),150); }
   if(name==="cart") renderCart();
+  if(name==="payment") renderPayment();
+  if(name==="book"){ if(pendingEv!=null){ BK.ev=pendingEv; BK.session=0; pendingEv=null; } renderBooking(); }
   if(name==="account") renderAccount();
+  closeSearch();
   closeDrawer();
   window.scrollTo({top:0, behavior:"instant"});
 }

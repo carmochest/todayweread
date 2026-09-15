@@ -273,6 +273,76 @@ section.block{padding-block:clamp(48px,7vw,96px)}
 .pay span{font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--plum-line);border-radius:4px;padding:4px 8px;color:var(--ink-soft)}
 @media (max-width:900px){.cart-layout{grid-template-columns:1fr}.summary{position:static}}
 
+/* ---------- Payment / booking / policies / search ---------- */
+.steps{display:flex;gap:8px;align-items:center;font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-top:14px;flex-wrap:wrap}
+.steps span{display:flex;align-items:center;gap:8px}
+.steps .on{color:var(--plum)}
+.steps i{width:22px;height:22px;border-radius:999px;border:1.5px solid currentColor;display:grid;place-items:center;font-style:normal;font-size:11px}
+.steps .done i{background:var(--plum);border-color:var(--plum);color:#fff}
+.steps em{width:22px;height:1px;background:var(--plum-line);font-style:normal}
+.fieldset{background:var(--white);border:1px solid var(--plum-line);border-radius:var(--radius);padding:22px;margin-bottom:18px}
+.fieldset h3{font-family:var(--body);font-size:17px;font-weight:600;text-transform:none;letter-spacing:0;margin-bottom:14px}
+.choice{display:flex;flex-direction:column;gap:8px}
+.choice label{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px;border:1.5px solid var(--plum-line);border-radius:var(--radius);cursor:pointer;font-size:14.5px}
+.choice label:has(input:checked){border-color:var(--plum);background:var(--plum-pale)}
+.choice input{accent-color:var(--plum)}
+.choice small{display:block;color:var(--ink-soft);font-size:12.5px}
+.choice .amt{font-variant-numeric:tabular-nums;font-weight:600}
+.paytabs{display:flex;gap:8px;margin-bottom:14px}
+.paytabs button{padding:9px 16px;border-radius:999px;border:1.5px solid var(--plum-line);font-size:13.5px;font-weight:600;background:var(--white)}
+.paytabs button[aria-selected="true"]{background:var(--plum);border-color:var(--plum);color:#fff}
+.card-preview{background:linear-gradient(135deg,var(--plum),var(--plum-deep));color:#fff;border-radius:14px;padding:20px;aspect-ratio:1.7;max-width:340px;display:flex;flex-direction:column;justify-content:space-between;font-variant-numeric:tabular-nums;margin-bottom:16px}
+.card-preview .num{font-size:19px;letter-spacing:.12em}
+.card-preview .row{display:flex;justify-content:space-between;font-size:12px;opacity:.85}
+.qr{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center}
+.qr svg{width:160px;height:160px;border:1px solid var(--plum-line);border-radius:8px;padding:10px;background:#fff}
+.qr p{font-size:14px;color:var(--ink-soft)}
+.stepper{display:inline-flex;align-items:center;border:1.5px solid var(--plum-line);border-radius:999px;background:#fff}
+.stepper button{width:38px;height:38px;font-size:18px}
+.stepper span{min-width:34px;text-align:center;font-weight:600;font-variant-numeric:tabular-nums}
+.ev-pick{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ev-pick label{display:block;border:1.5px solid var(--plum-line);border-radius:var(--radius);overflow:hidden;cursor:pointer;background:#fff}
+.ev-pick label:has(input:checked){border-color:var(--plum);box-shadow:0 0 0 2px var(--plum-pale)}
+.ev-pick input{position:absolute;opacity:0;pointer-events:none}
+.ev-pick .art{aspect-ratio:16/9}
+.ev-pick .art svg{width:100%;height:100%}
+.ev-pick .b{padding:14px}
+.ev-pick .b b{display:block;font-size:15px;margin-bottom:4px}
+.ev-pick .b span{font-size:13px;color:var(--plum);font-weight:600}
+.confirm{max-width:640px;margin:0 auto;text-align:center;padding-block:48px 80px}
+.confirm .bf{width:110px;margin:0 auto 18px}
+.confirm h1{font-size:clamp(30px,4vw,52px);color:var(--plum)}
+.confirm p{margin-top:12px;color:var(--ink-soft)}
+.confirm .order{margin-top:26px;text-align:left;background:#fff;border:1px solid var(--plum-line);border-radius:var(--radius);padding:20px}
+.confirm .order .row{display:flex;justify-content:space-between;padding:8px 0;font-size:14.5px;border-bottom:1px solid var(--plum-line)}
+.confirm .order .row:last-child{border:0;font-weight:600}
+.policy-page{padding-block:32px 88px}
+.policy-page>*{max-width:72ch}
+.policy-page h2{font-family:var(--body);font-size:20px;font-weight:600;text-transform:none;letter-spacing:0;margin:34px 0 10px}
+.policy-page p,.policy-page li{font-size:15.5px;line-height:1.6;color:var(--ink)}
+.policy-page ul{padding-left:20px;margin:8px 0}
+.policy-page li{margin-bottom:6px}
+.policy-page .meta{font-size:13px;color:var(--ink-soft);margin-top:10px}
+.policy-page table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14.5px}
+.policy-page th,.policy-page td{text-align:left;padding:10px 12px 10px 0;border-bottom:1px solid var(--plum-line);vertical-align:top}
+.policy-page th{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--plum)}
+.search-bg{position:fixed;inset:0;background:rgba(43,26,37,.45);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s}
+.search-bg.open{opacity:1;pointer-events:auto}
+.search-panel{position:fixed;left:50%;top:8vh;transform:translate(-50%,-12px);width:min(720px,calc(100% - 32px));background:var(--paper);border-radius:12px;z-index:61;box-shadow:0 30px 80px rgba(43,26,37,.3);opacity:0;pointer-events:none;transition:.2s;max-height:80vh;display:flex;flex-direction:column;overflow:hidden}
+.search-panel.open{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+.search-panel .search{margin:16px;min-width:0}
+.search-panel .search input{font-size:17px}
+.search-results{overflow:auto;padding:0 16px 16px;display:grid;gap:6px}
+.sr{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;padding:8px 10px;border-radius:8px;text-align:left}
+.sr:hover,.sr:focus-visible{background:var(--plum-pale)}
+.sr .cover{aspect-ratio:3/4;border-radius:2px;overflow:hidden}
+.sr .cover svg{width:100%;height:100%}
+.sr .t{font-weight:600;font-size:14.5px}
+.sr .s{font-size:12.5px;color:var(--ink-soft)}
+.sr .p{font-size:13.5px;font-variant-numeric:tabular-nums}
+.search-hint{padding:0 16px 18px;font-size:13px;color:var(--ink-soft)}
+@media (max-width:640px){.ev-pick{grid-template-columns:1fr}.qr{grid-template-columns:1fr}}
+
 /* ---------- Gift card ---------- */
 .gift-layout{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;padding-block:40px 72px}
 .gc{aspect-ratio:1.586;border-radius:14px;background:var(--butter);position:relative;overflow:hidden;padding:24px;color:var(--plum-deep);box-shadow:0 30px 50px -24px rgba(94,51,73,.5)}
@@ -349,6 +419,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
 .socials svg{width:17px;height:17px;fill:currentColor}
 .socials a:hover{background:var(--butter);color:var(--plum-deep);border-color:var(--butter);text-decoration:none}
 .ft-bottom{margin-top:44px;padding-top:18px;border-top:1px solid rgba(255,255,255,.2);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12.5px;opacity:.8}
+.ft .hours a{text-decoration:underline;text-underline-offset:3px}
 .ft-bottom a{text-decoration:underline;text-underline-offset:3px}
 @media (max-width:820px){.ft{grid-template-columns:1fr 1fr}}
 @media (max-width:480px){.ft{grid-template-columns:1fr}}
@@ -382,7 +453,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
       <a href="#events" class="events">Events ✦</a>
     </nav>
     <div class="hdr-tools">
-      <a href="#books" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="lbl">Search</span></a>
+      <button type="button" id="searchBtn" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="lbl">Search</span></button>
       <a href="#account" aria-label="My account"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><span class="lbl">Account</span></a>
       <a href="#cart" aria-label="Cart"><svg viewBox="0 0 24 24"><path d="M6 7h13l-1.2 8H7.6L6 4H3"/><circle cx="9" cy="20" r="1.2"/><circle cx="17" cy="20" r="1.2"/></svg><span class="cart-count" id="cartCount">0</span></a>
     </div>
@@ -616,7 +687,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
 <!-- ================= CART / CHECKOUT ================= -->
 <section class="view" data-view="cart">
   <div class="page-head" style="border:0"><div class="wrap">
-    <p class="eyebrow">Page 4</p>
+    <p class="eyebrow">Your bag</p>
     <h1 class="display">Check out</h1>
   </div></div>
   <div class="wrap cart-layout">
@@ -637,7 +708,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
             <li>Customer service: contact@todayweread.com · 10:00am–6:00pm every day.</li>
           </ul>
         </details>
-        <label><input type="checkbox" id="ackPolicy"> I have read and accept the exchange &amp; refund policy.</label>
+        <label><input type="checkbox" id="ackPolicy"> I have read and accept the <a href="#refund" style="text-decoration:underline">exchange &amp; refund policy</a>.</label>
       </div>
     </div>
     <aside class="summary">
@@ -649,6 +720,200 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
       <div class="pay"><span>Visa</span><span>Mastercard</span><span>PromptPay QR</span></div>
       <p class="fine">Payment is handled by Shopify Checkout with Stripe or Omise (card + PromptPay). Inventory and orders sync to Odoo.</p>
     </aside>
+  </div>
+</section>
+
+<!-- ================= PAYMENT ================= -->
+<section class="view" data-view="payment">
+  <div class="page-head" style="border:0"><div class="wrap">
+    <p class="eyebrow">Checkout</p>
+    <h1 class="display">Payment</h1>
+    <div class="steps"><span class="done"><i>✓</i>Bag</span><em></em><span class="on"><i>2</i>Details &amp; payment</span><em></em><span><i>3</i>Done</span></div>
+  </div></div>
+  <div class="wrap cart-layout">
+    <form id="payForm" onsubmit="return false">
+      <div class="fieldset">
+        <h3>Contact</h3>
+        <div class="form">
+          <div class="two"><label>Full name<input class="input" id="payName" required autocomplete="name"></label><label>Email<input class="input" id="payEmail" type="email" required autocomplete="email"></label></div>
+          <label>Tel. no.<input class="input" id="payTel" type="tel" autocomplete="tel"></label>
+        </div>
+      </div>
+      <div class="fieldset" id="deliveryBox">
+        <h3>Delivery</h3>
+        <div class="choice" id="shipChoice">
+          <label><input type="radio" name="ship" value="bkk" checked><span>Bangkok delivery<small>1–2 business days · Kerry Express</small></span><span class="amt" data-ship="bkk">฿60</span></label>
+          <label><input type="radio" name="ship" value="th"><span>Rest of Thailand<small>2–4 business days · Kerry Express</small></span><span class="amt" data-ship="th">฿90</span></label>
+          <label><input type="radio" name="ship" value="pickup"><span>Collect in store<small>Ready within 24 hours · every day 10AM–7PM</small></span><span class="amt">Free</span></label>
+        </div>
+        <div class="form" id="addrFields" style="margin-top:14px">
+          <label>Address<textarea class="input" id="payAddr" autocomplete="street-address"></textarea></label>
+          <div class="two"><label>District / Province<input class="input" id="payDistrict"></label><label>Postcode<input class="input" id="payPost" inputmode="numeric"></label></div>
+          <label>Delivery note<input class="input" id="payNote" placeholder="e.g. leave parcel with the building office"></label>
+        </div>
+      </div>
+      <div class="fieldset" id="ticketNote" hidden>
+        <h3>Tickets</h3>
+        <p style="font-size:14.5px;color:var(--ink-soft)">Your places are confirmed by email with a QR code for the door — nothing to collect.</p>
+      </div>
+      <div class="fieldset">
+        <h3>Payment</h3>
+        <div class="paytabs" role="tablist"><button type="button" role="tab" aria-selected="true" data-pay="card">Credit / debit card</button><button type="button" role="tab" aria-selected="false" data-pay="promptpay">PromptPay QR</button></div>
+        <div id="payCard">
+          <div class="card-preview"><div><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.8">Today We Read</span></div><div class="num" id="cardPreviewNum">•••• •••• •••• ••••</div><div class="row"><span id="cardPreviewName">NAME ON CARD</span><span id="cardPreviewExp">MM / YY</span></div></div>
+          <div class="form">
+            <label>Card number<input class="input" id="cardNum" inputmode="numeric" placeholder="1234 5678 9012 3456" maxlength="19"></label>
+            <div class="two"><label>Expiry<input class="input" id="cardExp" placeholder="MM / YY" maxlength="7"></label><label>Security code<input class="input" id="cardCvc" inputmode="numeric" placeholder="CVC" maxlength="4"></label></div>
+            <label>Name on card<input class="input" id="cardName" autocomplete="cc-name"></label>
+          </div>
+          <p style="font-size:12.5px;color:var(--ink-soft);margin-top:10px">Card details are entered on Shopify's secure checkout, processed by Omise / Stripe. This page is a design preview — nothing is charged.</p>
+        </div>
+        <div id="payPP" hidden>
+          <div class="qr">
+            <svg viewBox="0 0 21 21" shape-rendering="crispEdges" aria-label="PromptPay QR code placeholder" id="qrSvg"></svg>
+            <div><p><b style="color:var(--ink)">Scan with any Thai banking app.</b><br>The QR is generated for the exact amount when you confirm. Payment is verified automatically and your order is confirmed on this page.</p><p style="margin-top:8px">The QR expires after 15 minutes.</p></div>
+          </div>
+        </div>
+      </div>
+    </form>
+    <aside class="summary">
+      <h3>Order summary</h3>
+      <div id="paySummaryLines" style="margin-bottom:8px"></div>
+      <div class="row"><span>Items</span><span id="paySub">฿0</span></div>
+      <div class="row"><span>Delivery</span><span id="payShip">฿0</span></div>
+      <div class="row total"><span>Total</span><span id="payTotal">฿0</span></div>
+      <button class="btn solid wide" id="payBtn" style="margin-top:16px" type="button">Pay ฿0</button>
+      <div class="pay"><span>Visa</span><span>Mastercard</span><span>PromptPay QR</span></div>
+      <p class="fine">By paying you accept the <a href="#terms" style="text-decoration:underline">terms &amp; conditions</a> and <a href="#refund" style="text-decoration:underline">refund policy</a>. Receipts are emailed; tax invoices on request.</p>
+    </aside>
+  </div>
+</section>
+
+<!-- ================= CONFIRMATION ================= -->
+<section class="view" data-view="confirmation">
+  <div class="wrap confirm">
+    <span class="bf" data-butterfly="idle"></span>
+    <p class="eyebrow">Thank you</p>
+    <h1 class="display" style="margin-top:8px">Order confirmed</h1>
+    <p id="confirmText">We've emailed your receipt.</p>
+    <div class="order" id="confirmOrder"></div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:24px;flex-wrap:wrap"><a class="btn solid" href="#books">Keep browsing</a><a class="btn" href="#account">View order status</a></div>
+  </div>
+</section>
+
+<!-- ================= BOOK A PLACE ================= -->
+<section class="view" data-view="book">
+  <div class="page-head" style="border:0"><div class="wrap">
+    <p class="eyebrow">Events</p>
+    <h1 class="display">Book a place</h1>
+    <p>Pick a session, tell us how many are coming, and your places go into your bag with everything else.</p>
+  </div></div>
+  <div class="wrap cart-layout">
+    <div>
+      <div class="fieldset">
+        <h3>Which event?</h3>
+        <div class="ev-pick" id="evPick"></div>
+      </div>
+      <div class="fieldset" id="sessionBox">
+        <h3>Session</h3>
+        <div class="choice" id="sessionChoice"></div>
+      </div>
+      <div class="fieldset">
+        <h3>How many places?</h3>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <div class="stepper"><button type="button" id="plMinus" aria-label="Fewer">−</button><span id="plCount">2</span><button type="button" id="plPlus" aria-label="More">+</button></div>
+          <span id="plNote" style="font-size:13.5px;color:var(--ink-soft)">Children need an accompanying adult — count everyone who's coming.</span>
+        </div>
+      </div>
+      <div class="fieldset">
+        <h3>Who's coming?</h3>
+        <div class="form">
+          <div class="two"><label>Your name<input class="input" id="bkName"></label><label>Email<input class="input" id="bkEmail" type="email"></label></div>
+          <label>Anything we should know?<input class="input" id="bkNote" placeholder="Ages of children, access needs, language"></label>
+        </div>
+      </div>
+    </div>
+    <aside class="summary">
+      <h3>Your booking</h3>
+      <div class="row"><span id="bkSumEvent">—</span></div>
+      <div class="row"><span id="bkSumSession">—</span><span id="bkSumPrice"></span></div>
+      <div class="row total"><span>Total</span><span id="bkSumTotal">฿0</span></div>
+      <button class="btn solid wide" id="bkAdd" style="margin-top:16px" type="button">Add to bag &amp; check out</button>
+      <p class="fine">Places are held for 15 minutes while you check out. Tickets are emailed with a QR code for the door. Free events still need a booking so we know numbers.</p>
+    </aside>
+  </div>
+</section>
+
+<!-- ================= POLICIES ================= -->
+<section class="view" data-view="refund">
+  <div class="page-head" style="border:0"><div class="wrap"><p class="eyebrow">Business policy</p><h1 class="display">Exchange &amp; refund policy</h1><p class="meta">Applies to online orders and in-store purchases. Last updated 15 September 2026.</p></div></div>
+  <div class="wrap policy-page">
+    <p>We accept returns only if 1) you receive the wrong item, or 2) the item was damaged during delivery. If the item you received is not the correct order or is defective, please email <a href="mailto:contact@todayweread.com" style="text-decoration:underline">contact@todayweread.com</a> so we can arrange an exchange or refund.</p>
+    <h2>Exchange policy</h2>
+    <ul><li>Exchanges can be made within 7 business days from the date of the tax receipt.</li><li>All exchanges will be processed and we will resend the new item within 14 business days.</li><li>If there is inventory on hand we exchange straight away; otherwise we resend the new item within 30 business days, or you may request a refund instead.</li></ul>
+    <h2>Refund policy</h2>
+    <p><b>Payment by credit card</b></p>
+    <ul><li>Refund requested <b>before</b> dispatch — refunded to the credit card within 30 business days.</li><li>Refund requested <b>after</b> dispatch — refunded to the credit card within 30 days after the product is returned.</li></ul>
+    <p><b>Payment by other methods</b></p>
+    <ul><li>Refunded to the customer's savings account within 30 days after the product is returned.</li></ul>
+    <p><b>All payment methods</b></p>
+    <ul><li>Exchanges and refunds are accepted within 7 business days from the date of the tax receipt — the customer must provide the tax receipt to customer service on request.</li><li>No refund after 7 business days from the date of the tax receipt.</li></ul>
+    <h2>Gift cards</h2>
+    <p>Products purchased with a gift card cannot be returned — only exchanged in-store within 7 days of the original gift card purchase. Gift cards themselves are not refundable and cannot be exchanged for cash.</p>
+    <h2>Event bookings</h2>
+    <p>Workshop and event places can be moved to another session up to 48 hours before the start time, subject to availability. Paid places are refunded in full if we cancel an event.</p>
+    <h2>Customer service</h2>
+    <p>Email <a href="mailto:contact@todayweread.com" style="text-decoration:underline">contact@todayweread.com</a> · Tel. to be confirmed · 10:00am–6:00pm, every day.</p>
+  </div>
+</section>
+
+<section class="view" data-view="terms">
+  <div class="page-head" style="border:0"><div class="wrap"><p class="eyebrow">Legal</p><h1 class="display">Terms &amp; conditions</h1><p class="meta">These terms govern use of todayweread.com and purchases made through it. Last updated 15 September 2026.</p></div></div>
+  <div class="wrap policy-page">
+    <h2>1. Who we are</h2>
+    <p>Today We Read is a bookshop based in Bangkok, Thailand. References to "we", "us" and "the shop" mean Today We Read; "you" means the person using this website or placing an order.</p>
+    <h2>2. Orders</h2>
+    <ul><li>An order is accepted when we send an order confirmation by email. We may decline or cancel an order where an item is out of stock, mis-priced or where payment cannot be verified; anything already paid is refunded in full.</li><li>Prices are shown in Thai Baht (THB) and include VAT where applicable. Delivery charges are shown separately before you pay.</li><li>Stock shown online is synchronised with the shop but may occasionally lag; if an item sells out after you order we will contact you to offer an alternative or a refund.</li></ul>
+    <h2>3. Payment</h2>
+    <p>We accept credit and debit cards and PromptPay QR. Payments are processed by our payment provider; we do not store your card details.</p>
+    <h2>4. Delivery</h2>
+    <ul><li>Bangkok: ฿60, 1–2 business days. Rest of Thailand: ฿90, 2–4 business days. Free delivery on orders over ฿1,500. Collection in store is free.</li><li>Orders placed before 2pm ship the same business day. Delivery times are estimates and may be affected by the courier or public holidays.</li></ul>
+    <h2>5. Exchanges and refunds</h2>
+    <p>See our <a href="#refund" style="text-decoration:underline">Exchange &amp; refund policy</a>, which forms part of these terms.</p>
+    <h2>6. Gift cards</h2>
+    <ul><li>Gift cards can be used at all Today We Read stores in Thailand and cannot be used at the online store.</li><li>Valid for 3 months (90 days) from purchase; remaining value cannot be exchanged for cash; cards cannot be topped up or gifted onward.</li><li>Today We Read is not responsible for lost, damaged, stolen or improperly used cards. A card is invalid if its barcode is defective or the security feature is damaged.</li></ul>
+    <h2>7. Events and workshops</h2>
+    <p>Places are confirmed by email with a QR code. Paid places may be moved to another session up to 48 hours before the event, subject to availability. We may photograph events for our own communications; tell a member of staff on the day if you would prefer not to appear.</p>
+    <h2>8. Your account</h2>
+    <p>You are responsible for keeping your login details private and for activity on your account. You can ask us to close your account at any time.</p>
+    <h2>9. Content and intellectual property</h2>
+    <p>The Today We Read name, logo, illustrations and website content belong to us or our licensors and may not be reproduced without permission. Book covers and descriptions are shown for the purpose of selling those titles.</p>
+    <h2>10. Liability</h2>
+    <p>Nothing in these terms limits liability that cannot be limited under Thai law. Beyond that, our liability for any order is limited to the amount you paid for it.</p>
+    <h2>11. Governing law</h2>
+    <p>These terms are governed by the laws of Thailand. Questions about them: <a href="mailto:contact@todayweread.com" style="text-decoration:underline">contact@todayweread.com</a>.</p>
+  </div>
+</section>
+
+<section class="view" data-view="privacy">
+  <div class="page-head" style="border:0"><div class="wrap"><p class="eyebrow">Legal</p><h1 class="display">Privacy policy</h1><p class="meta">How Today We Read collects and uses personal data under Thailand's Personal Data Protection Act (PDPA). Last updated 15 September 2026.</p></div></div>
+  <div class="wrap policy-page">
+    <h2>What we collect</h2>
+    <ul><li><b>Account and order details</b> — name, email, telephone number, delivery address and order history, when you create an account, place an order or book an event.</li><li><b>Payment</b> — handled by our payment provider; we receive confirmation of payment, not your card number.</li><li><b>Preferences</b> — wishlist items and, with your consent, whether you'd like to receive news from us.</li><li><b>Website use</b> — basic technical data (device, browser, pages visited) to keep the site working and understand what people read.</li></ul>
+    <h2>Why we use it</h2>
+    <ul><li>To fulfil and deliver orders, confirm event bookings and provide customer service.</li><li>To run your account, wishlist and order history.</li><li>To send news, new releases and event invitations — only if you opt in, and you can opt out from any email.</li><li>To keep the shop's records and meet accounting and tax obligations.</li></ul>
+    <h2>Who we share it with</h2>
+    <p>Only the services needed to run the shop: our e-commerce platform (Shopify), payment providers, delivery couriers, our accounting system, and email service. They process data on our instructions. We do not sell personal data.</p>
+    <h2>How long we keep it</h2>
+    <p>Order records are kept for as long as Thai accounting and tax law requires. Account data is kept while your account is open and removed on request. Marketing preferences are kept until you opt out.</p>
+    <h2>Your rights</h2>
+    <p>Under the PDPA you can ask to access, correct or delete your personal data, withdraw consent, object to processing, or ask for a copy of your data. Email <a href="mailto:contact@todayweread.com" style="text-decoration:underline">contact@todayweread.com</a> and we will respond within 30 days.</p>
+    <h2>Cookies</h2>
+    <p>The site uses cookies that are necessary for the bag, checkout and login to work, and optional analytics cookies to understand how the site is used. You can control optional cookies in your browser.</p>
+    <h2>Children</h2>
+    <p>Accounts and orders must be made by an adult. Event bookings for children are made by a parent or guardian.</p>
+    <h2>Contact</h2>
+    <p>Today We Read, Bangkok · <a href="mailto:contact@todayweread.com" style="text-decoration:underline">contact@todayweread.com</a></p>
   </div>
 </section>
 </main>
@@ -672,25 +937,30 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
       </div>
       <div>
         <h4>Visit</h4>
-        <div class="hours">Every day 10AM–7PM<br><a href="#" onclick="event.preventDefault();toast('Store details coming soon.')">Find a store</a><br>contact@todayweread.com<br>Tel. — coming soon</div>
+        <div class="hours">Today We Read, Bangkok<br>Every day 10AM–7PM<br><a href="mailto:contact@todayweread.com">contact@todayweread.com</a><br>Tel. — coming soon</div>
       </div>
       <div>
         <h4>Help</h4>
-        <ul><li><a href="#cart">Refund &amp; exchange policy</a></li><li><a href="#" onclick="event.preventDefault();toast('Terms & privacy policy page.')">Terms &amp; conditions</a></li><li><a href="#" onclick="event.preventDefault();toast('Terms & privacy policy page.')">Privacy policy</a></li><li><a href="#" onclick="event.preventDefault();toast('Careers — details to follow.')">Careers</a></li><li><a href="#" onclick="event.preventDefault();toast('Cross-link to Spark Play Museum.')">Spark Play Museum ↗</a></li></ul>
+        <ul><li><a href="#refund">Refund &amp; exchange policy</a></li><li><a href="#terms">Terms &amp; conditions</a></li><li><a href="#privacy">Privacy policy</a></li><li><a href="#" onclick="event.preventDefault();toast('Careers — details to follow.')">Careers</a></li><li><a href="#" onclick="event.preventDefault();toast('Cross-link to Spark Play Museum.')">Spark Play Museum ↗</a></li></ul>
       </div>
     </div>
     <div class="ft-bottom">
       <span>© Today We Read — All Rights Reserved</span>
-      <span>Design prototype v1.9 · Shopify storefront · Bangkok</span>
     </div>
   </div>
 </footer>
 
+<div class="search-bg" id="searchBg"></div>
+<div class="search-panel" id="searchPanel" role="dialog" aria-label="Search the shop">
+  <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="searchInput" type="search" placeholder="Search titles, authors, categories" autocomplete="off"></label>
+  <div class="search-results" id="searchResults"></div>
+  <div class="search-hint" id="searchHint">Try “picture books”, “design”, or an author's name. Press Enter to see all results.</div>
+</div>
 <div class="drawer-bg" id="drawerBg"></div>
 <aside class="drawer" id="drawer" aria-label="Product details"><div class="inner" id="drawerInner"></div></aside>
 <div class="toast" id="toast" role="status" aria-live="polite"><span class="bf" data-butterfly="idle"></span><span id="toastText"></span></div>
 
-<script src="app.js?v=1.9.2"></script>
+<script src="app.js?v=2.0"></script>
 
 </body>
 </html>
