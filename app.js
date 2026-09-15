@@ -136,7 +136,12 @@ function buildGarden(){
   GS={L, W, H, G, plants, sways, spots, S:L.S, bf:garden.querySelector("#bfly"), setBf, i:0, state:"perch", until:performance.now()+2600, next:null,
       flapPhase:0, lastNow:performance.now(), restFlapAt:performance.now()+1800, restFlapT0:0, from:null, to:null, t0:0, dur:0, ctrl:null, lastT:0};
   plants.forEach((el,k)=>{
-    el.addEventListener("pointerenter",()=>{ if(GS.i!==k){ GS.next=k; if(GS.state==="perch") GS.until=Math.min(GS.until, performance.now()+300); } });
+    // hover shows the shelf name straight away and calls the butterfly over
+    el.addEventListener("pointerenter",e=>{ if(e.pointerType==="touch") return; GS.tags[k].classList.add("peek"); if(GS.i!==k){ GS.next=k; GS.rush=true; if(GS.state==="perch") GS.until=Math.min(GS.until, performance.now()+60); } });
+    el.addEventListener("pointerleave",()=>{ GS.tags[k].classList.remove("peek"); });
+    // touch: first tap reveals the name (and calls the butterfly), second tap opens the shelf
+    el.addEventListener("click",e=>{ if(!GS.touchLast) return; const t=GS.tags[k]; if(t.classList.contains("peek")||t.classList.contains("here")) return; e.preventDefault(); GS.tags.forEach(x=>x.classList.remove("peek")); t.classList.add("peek"); GS.next=k; GS.rush=true; if(GS.state==="perch") GS.until=Math.min(GS.until, performance.now()+60); clearTimeout(GS.peekT); GS.peekT=setTimeout(()=>t.classList.remove("peek"),3500); });
+    el.addEventListener("pointerdown",e=>{ GS.touchLast = e.pointerType==="touch"; });
   });
   GS.tags=[...garden.querySelectorAll("#tags .tag")];
   GS.sky=garden.querySelector("#sky"); GS.sun=garden.querySelector("#sun"); GS.stars=garden.querySelector("#stars"); GS.tint=garden.querySelector("#tint");
@@ -195,7 +200,7 @@ function gardenTick(now){
       let j = (s.next!=null && s.next!==s.i) ? s.next : (s.i+1+Math.floor(Math.random()*(PLANTS.length-1)))%PLANTS.length;
       s.next=null; s.from={x,y}; s.to=s.spots[j]; s.prev=s.i; s.i=j; s.state="fly"; s.t0=now;
       const d=Math.hypot(s.to.x-s.from.x, s.to.y-s.from.y), dir=Math.sign(s.to.x-s.from.x)||1;
-      s.dur = 1500 + d*2.1;
+      s.dur = (s.rush ? 0.55 : 1) * (1500 + d*2.1); s.rush=false;
       const lift = 110 + d*0.22;
       s.ctrl=[ {x:s.from.x+dir*d*0.18, y:s.from.y-lift}, {x:s.to.x-dir*d*0.22, y:Math.min(s.from.y,s.to.y)-lift*0.8} ];
       s.takeRot = sw.a + sp.tilt; s.hz=null;
