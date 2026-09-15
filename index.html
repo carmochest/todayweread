@@ -366,6 +366,32 @@ section.block{padding-block:clamp(48px,7vw,96px)}
 .denoms{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
 .denom{padding:12px 20px;border-radius:999px;border:1.5px solid var(--plum-line);font-weight:600;background:var(--white);font-variant-numeric:tabular-nums}
 .denom[aria-pressed="true"]{border-color:var(--plum);background:var(--plum);color:var(--white)}
+.gift-form{background:var(--white);border:1px solid var(--plum-line);border-radius:14px;padding:22px 24px 20px}
+.gift-form h2{margin-bottom:6px}
+.gift-who{margin-top:14px;border:0;padding:0;margin-inline:0}
+.gift-who legend{font-size:13px;font-weight:600;padding:0;margin-bottom:8px}
+.gift-who label{padding:12px 14px}
+.gift-who small{display:block;font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+.gift-fields{margin-top:14px}
+.gift-fields label{display:block;font-size:13px;font-weight:600;margin-top:12px}
+.gift-fields .opt{font-weight:400;color:var(--ink-soft)}
+.gift-fields input,.gift-fields textarea{display:block;width:100%;margin-top:6px;padding:10px 12px;border:1px solid var(--plum-line);border-radius:8px;font:inherit;font-size:14px;background:var(--white);resize:none}
+.gift-fields input:focus,.gift-fields textarea:focus{outline:2px solid var(--plum);outline-offset:1px}
+.gift-fields .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gift-fields .field-row label{margin-top:0}
+.gift-form .btn.wide{width:100%;margin-top:18px;justify-content:center}
+.gift-form .note{font-size:12.5px;color:var(--ink-soft);margin-top:10px;line-height:1.5}
+.gc-sleeve{margin-top:18px;padding:16px 18px;border:1px dashed var(--plum-line);border-radius:12px;background:var(--white)}
+.gc-sleeve p{margin:0;font-size:14px}
+.gc-sleeve .eyebrow{margin-bottom:8px}
+.gc-sleeve-msg{color:var(--ink-soft);font-style:italic;line-height:1.5;margin:6px 0!important;min-height:0}
+.gc-sleeve-msg:empty{display:none}
+.how{list-style:none;counter-reset:h;margin:26px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.how li{counter-increment:h;padding-top:10px;border-top:2px solid var(--plum)}
+.how li::before{content:counter(h,decimal-leading-zero);display:block;font-family:var(--display);color:var(--plum);font-size:20px;margin-bottom:6px}
+.how b{display:block;font-size:14px}
+.how span{display:block;font-size:13px;color:var(--ink-soft);line-height:1.5;margin-top:4px}
+@media(max-width:860px){.how{grid-template-columns:1fr}.gift-fields .field-row{grid-template-columns:1fr}}
 .gift-info h2{font-size:clamp(28px,3.4vw,44px);color:var(--plum)}
 .gift-info p{margin-top:12px;color:var(--ink-soft);line-height:1.55}
 .gift-info table{width:100%;border-collapse:collapse;margin-top:20px;font-size:14px}
@@ -602,8 +628,9 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
 <!-- ================= GIFT CARD ================= -->
 <section class="view" data-view="gift">
   <div class="page-head" style="border:0"><div class="wrap">
-        <p class="eyebrow">In store</p>
+        <p class="eyebrow">Shop</p>
     <h1 class="display">Gift card</h1>
+    <p class="meta">Buy online, we post it in a gift sleeve — to you or straight to them. Redeemed in person at the shop.</p>
   </div></div>
   <div class="wrap gift-layout">
     <div>
@@ -611,36 +638,60 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
         <div class="wm">Today We Read</div>
         <span class="bf" data-butterfly="idle"></span>
         <div class="val" id="gcVal">฿1,000</div>
-        <div class="fine">Gift card · in-store</div>
+        <div class="fine">Gift card · redeem in store</div>
       </div>
       <div class="denoms" id="denoms"></div>
-      <p style="font-size:13.5px;color:var(--ink-soft);margin-top:14px">Valid 3 months (90 days) from purchase at all Today We Read stores in Thailand.</p>
+      <div class="gc-sleeve" id="gcSleeve" hidden>
+        <p class="eyebrow">Printed on the sleeve</p>
+        <p class="gc-sleeve-to">For <b id="gcToPrev">—</b></p>
+        <p class="gc-sleeve-msg" id="gcMsgPrev"></p>
+        <p class="gc-sleeve-from">From <b id="gcFromPrev">—</b></p>
+      </div>
     </div>
     <div class="gift-info">
-      <h2 class="display">Let them choose the book</h2>
-      <p>Gift cards can be purchased and used at all Today We Read stores in Thailand. They are not redeemable at the online store — a gift card is an excuse to visit.</p>
+      <div class="gift-form">
+        <h2 class="display">Let them choose the book</h2>
+        <fieldset class="choice gift-who" id="giftWho">
+          <legend>Who is it for?</legend>
+          <label><input type="radio" name="who" value="me" checked><span><b>Send it to me</b><small>I'll hand it over myself</small></span></label>
+          <label><input type="radio" name="who" value="them"><span><b>Send it to them</b><small>Posted in a gift sleeve with your message</small></span></label>
+        </fieldset>
+        <div class="gift-fields" id="giftFields" hidden>
+          <div class="field-row">
+            <label>Their name<input id="gcTo" maxlength="40" placeholder="Mia"></label>
+            <label>From<input id="gcFrom" maxlength="40" placeholder="Auntie Ploy"></label>
+          </div>
+          <label>Message <span class="opt">optional · <span id="gcCount">120</span> left</span><textarea id="gcMsg" maxlength="120" rows="2" placeholder="Happy birthday — pick anything with a dragon in it."></textarea></label>
+        </div>
+        <button class="btn solid wide" id="gcAdd">Add to bag · <span id="gcAddVal">฿1,000</span></button>
+        <p class="note">Enter the delivery address at checkout — yours or theirs. ฿60 in Bangkok, free over ฿1,500, or collect at the shop.</p>
+      </div>
+      <ol class="how">
+        <li><b>Buy online</b><span>Pick a value, add a message, pay as usual.</span></li>
+        <li><b>Posted in a sleeve</b><span>The card goes out within one business day to whichever address you give us.</span></li>
+        <li><b>Redeemed at the shop</b><span>Bring it to Family Fields, Sukhumvit 38. Gift cards can't be used on this website.</span></li>
+      </ol>
       <table>
-        <thead><tr><th>Value</th><th>Validity</th><th>Where</th></tr></thead>
+        <thead><tr><th>Value</th><th>Validity</th><th>Where to use</th></tr></thead>
         <tbody>
-          <tr><td>฿500</td><td>3 months (90 days) from purchase</td><td>In-store only, all Today We Read stores in Thailand</td></tr>
-          <tr><td>฿1,000</td><td>3 months (90 days) from purchase</td><td>In-store only, all Today We Read stores in Thailand</td></tr>
-          <tr><td>฿2,000</td><td>3 months (90 days) from purchase</td><td>In-store only, all Today We Read stores in Thailand</td></tr>
+          <tr><td>฿500</td><td>3 months (90 days) from purchase</td><td>In the shop only — Family Fields, Sukhumvit 38</td></tr>
+          <tr><td>฿1,000</td><td>3 months (90 days) from purchase</td><td>In the shop only — Family Fields, Sukhumvit 38</td></tr>
+          <tr><td>฿2,000</td><td>3 months (90 days) from purchase</td><td>In the shop only — Family Fields, Sukhumvit 38</td></tr>
         </tbody>
       </table>
       <details>
         <summary>Terms &amp; conditions for gift cards</summary>
         <ul>
-          <li>Gift card can be used at all Today We Read stores; it cannot be used at the Today We Read online store.</li>
+          <li>Gift cards can be bought online or in the shop, and redeemed only in person at the Today We Read shop. They cannot be used on the online store.</li>
           <li>Remaining value cannot be exchanged for cash.</li>
           <li>Today We Read is not responsible for lost, damaged, stolen or improperly used cards.</li>
-          <li>Purchase of a Today We Read gift card is not eligible to be gifted onward.</li>
+          <li>Gift cards cannot be exchanged for another gift card or gifted onward once part-used.</li>
           <li>Invalid if the barcode is defective and/or the security feature is damaged — contact Customer Service at contact@todayweread.com.</li>
           <li>Usable until the balance is depleted; cannot be topped up. After expiry or depletion, customers may keep the card.</li>
           <li>Check your remaining balance with staff at the cashier counter.</li>
-          <li>Products purchased with a gift card cannot be returned — only exchanged in-store within 7 days of the original gift card purchase.</li>
+          <li>Products purchased with a gift card cannot be returned — only exchanged in the shop within 7 days of the original gift card purchase.</li>
         </ul>
       </details>
-      <a class="btn solid" href="#home" style="margin-top:22px" onclick="toast('Find a store — details coming soon.')">Find a store to buy in person</a>
     </div>
   </div>
 </section>
@@ -744,6 +795,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
           <label><input type="radio" name="ship" value="th"><span>Rest of Thailand<small>2–4 business days · Kerry Express</small></span><span class="amt" data-ship="th">฿90</span></label>
           <label><input type="radio" name="ship" value="pickup"><span>Collect in store<small>Ready within 24 hours · every day 10AM–7PM</small></span><span class="amt">Free</span></label>
         </div>
+        <p class="gift-addr" id="giftAddrNote" hidden style="font-size:13px;color:var(--plum);margin-top:12px;background:var(--plum-pale);padding:10px 12px;border-radius:8px"></p>
         <div class="form" id="addrFields" style="margin-top:14px">
           <label>Address<textarea class="input" id="payAddr" autocomplete="street-address"></textarea></label>
           <div class="two"><label>District / Province<input class="input" id="payDistrict"></label><label>Postcode<input class="input" id="payPost" inputmode="numeric"></label></div>
@@ -879,7 +931,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
     <h2>5. Exchanges and refunds</h2>
     <p>See our <a href="#refund" style="text-decoration:underline">Exchange &amp; refund policy</a>, which forms part of these terms.</p>
     <h2>6. Gift cards</h2>
-    <ul><li>Gift cards can be used at all Today We Read stores in Thailand and cannot be used at the online store.</li><li>Valid for 3 months (90 days) from purchase; remaining value cannot be exchanged for cash; cards cannot be topped up or gifted onward.</li><li>Today We Read is not responsible for lost, damaged, stolen or improperly used cards. A card is invalid if its barcode is defective or the security feature is damaged.</li></ul>
+    <ul><li>Gift cards can be bought online or in the shop and redeemed only in person at the Today We Read shop (Family Fields, Sukhumvit 38); they cannot be used on the online store.</li><li>Valid for 3 months (90 days) from purchase; remaining value cannot be exchanged for cash; cards cannot be topped up or gifted onward.</li><li>Today We Read is not responsible for lost, damaged, stolen or improperly used cards. A card is invalid if its barcode is defective or the security feature is damaged.</li></ul>
     <h2>7. Events and workshops</h2>
     <p>Places are confirmed by email with a QR code. Paid places may be moved to another session up to 48 hours before the event, subject to availability. We may photograph events for our own communications; tell a member of staff on the day if you would prefer not to appear.</p>
     <h2>8. Your account</h2>
@@ -958,7 +1010,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
 <aside class="drawer" id="drawer" aria-label="Product details"><div class="inner" id="drawerInner"></div></aside>
 <div class="toast" id="toast" role="status" aria-live="polite"><span class="bf" data-butterfly="idle"></span><span id="toastText"></span></div>
 
-<script src="app.js?v=2.3"></script>
+<script src="app.js?v=2.4"></script>
 
 </body>
 </html>

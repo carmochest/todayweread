@@ -288,6 +288,7 @@ const PALS = [
   ["#FCF8EC","#945777"],["#F6C7B1","#7A3A2C"],["#5E3349","#FFD468"],["#D8DDF0","#2E3F7A"]
 ];
 function cover(item, big){
+  if(item.gift) return `<svg viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${item.title}"><rect width="300" height="400" fill="#F4E9EC"/><rect x="30" y="100" width="240" height="152" rx="14" fill="#FFD468"/><text x="46" y="130" font-family="ABC Grow, PP Mori, sans-serif" font-size="11" letter-spacing="2" fill="#7A3B5A">TODAY WE READ</text><text x="46" y="232" font-family="ABC Grow, PP Mori, sans-serif" font-size="30" fill="none" stroke="#7A3B5A" stroke-width="1.2">${THB(item.price)}</text><text x="24" y="352" font-family="PP Mori, Helvetica, sans-serif" font-weight="600" font-size="${big?24:21}" fill="#7A3B5A">Gift card</text><text x="24" y="386" font-family="PP Mori, Helvetica, sans-serif" font-size="12" fill="#7A3B5A" opacity=".85">Redeem in the shop</text></svg>`;
   const [bg, fg] = PALS[item.pal];
   const p = item.pattern;
   let art = "";
@@ -321,7 +322,10 @@ const TICKETS = [
   {id:"t1b", ev:0, title:"Fold a River — origami workshop", session:"Sat 3 Oct · 14:00", cat:"Event ticket", price:350, cap:16, sold:16, tags:[], pattern:3, pal:3, ticket:true, format:"90 minutes · ages 5+", blurb:"Ninety minutes, one long strip of paper, and a river that ends up as a boat. Parents fold too."},
   {id:"t2a", ev:1, title:"Wall Label — reading & signing", session:"Thu 15 Oct · 19:00", cat:"Event ticket", price:0, cap:60, sold:31, tags:[], pattern:2, pal:1, ticket:true, format:"About an hour · free", blurb:"Ines Marchetti reads from her museum-caption novel, followed by a conversation about writing in fragments."}
 ];
-const ALL = [...BOOKS, ...NONBOOKS, ...TICKETS];
+const GIFTS = [500,1000,2000].map(v=>({id:"gc"+v, title:"Gift card "+THB(v), cat:"Gift card", price:v, tags:[], pattern:0, pal:0, gift:true, format:"Physical card in a gift sleeve · redeem in the shop only", blurb:"A Today We Read gift card, posted in a sleeve with your message. Redeemed in person at the shop — valid 3 months from purchase."}));
+const ALL = [...BOOKS, ...NONBOOKS, ...TICKETS, ...GIFTS];
+let GIFT = {}; try{ GIFT = JSON.parse(localStorage.getItem("twr.gift")||"{}"); }catch(e){}
+const giftLine = id => { const g=GIFT[id]; return g && g.to ? `For ${esc(g.to)}${g.from?" · from "+esc(g.from):""}` : "For yourself"; };
 const find = id => ALL.find(x=>x.id===id);
 
 /* ---------- Card ---------- */
@@ -421,7 +425,27 @@ const nbShop = shop({
 const denoms=[500,1000,2000]; let denom=1000;
 const denomEl=document.getElementById("denoms");
 denomEl.innerHTML = denoms.map(d=>`<button class="denom" aria-pressed="${d===denom}" data-d="${d}">${THB(d)}</button>`).join("");
-denomEl.addEventListener("click",e=>{const b=e.target.closest(".denom");if(!b)return;denom=+b.dataset.d;denomEl.querySelectorAll(".denom").forEach(x=>x.setAttribute("aria-pressed",+x.dataset.d===denom));document.getElementById("gcVal").textContent=THB(denom);});
+denomEl.addEventListener("click",e=>{const b=e.target.closest(".denom");if(!b)return;denom=+b.dataset.d;denomEl.querySelectorAll(".denom").forEach(x=>x.setAttribute("aria-pressed",+x.dataset.d===denom));document.getElementById("gcVal").textContent=THB(denom);document.getElementById("gcAddVal").textContent=THB(denom);});
+const gcWho=document.getElementById("giftWho"), gcFields=document.getElementById("giftFields"), gcSleeve=document.getElementById("gcSleeve");
+const gcTo=document.getElementById("gcTo"), gcFrom=document.getElementById("gcFrom"), gcMsg=document.getElementById("gcMsg");
+function giftPreview(){
+  const them=gcWho.querySelector("input:checked").value==="them";
+  gcFields.hidden=!them; gcSleeve.hidden=!them;
+  document.getElementById("gcToPrev").textContent=gcTo.value.trim()||"—";
+  document.getElementById("gcFromPrev").textContent=gcFrom.value.trim()||"—";
+  document.getElementById("gcMsgPrev").textContent=gcMsg.value.trim();
+  document.getElementById("gcCount").textContent=120-gcMsg.value.length;
+}
+gcWho.addEventListener("change", giftPreview); [gcTo,gcFrom,gcMsg].forEach(el=>el.addEventListener("input", giftPreview));
+document.getElementById("gcAdd").addEventListener("click", ()=>{
+  const them=gcWho.querySelector("input:checked").value==="them";
+  if(them && !gcTo.value.trim()){ toast("Who is the card for? Add their name."); gcTo.focus(); return; }
+  const id="gc"+denom;
+  GIFT[id]= them ? {to:gcTo.value.trim(), from:gcFrom.value.trim(), msg:gcMsg.value.trim()} : null;
+  try{ localStorage.setItem("twr.gift", JSON.stringify(GIFT)); }catch(e){}
+  cart[id]=(cart[id]||0)+1; save(); renderCart();
+  toast(them ? `Gift card ${THB(denom)} for ${gcTo.value.trim()} added to your bag` : `Gift card ${THB(denom)} added to your bag`);
+});
 
 /* ---------- Account ---------- */
 function renderAccount(){
@@ -442,7 +466,7 @@ function renderCart(){
   const n=lines.reduce((a,l)=>a+l.q,0);
   document.getElementById("cartCount").textContent=n;
   const el=document.getElementById("cartLines");
-  el.innerHTML = lines.map(l=>`<div class="line"><div class="cover">${cover(l.item)}</div><div><div class="t">${esc(l.item.title)}</div><div class="a">${l.item.ticket?l.item.session+" · "+l.q+(l.q>1?" places":" place"):(l.item.author?esc(l.item.author)+" · ":"")+l.item.cat}</div><div class="qty"><button data-q="${l.item.id}" data-d="-1" aria-label="Decrease">−</button><span>${l.q}</span><button data-q="${l.item.id}" data-d="1" aria-label="Increase">+</button></div></div><div><div class="p">${THB(l.item.price*l.q)}</div><button class="rm" data-rm="${l.item.id}">Remove</button></div></div>`).join("");
+  el.innerHTML = lines.map(l=>`<div class="line"><div class="cover">${cover(l.item)}</div><div><div class="t">${esc(l.item.title)}</div><div class="a">${l.item.ticket?l.item.session+" · "+l.q+(l.q>1?" places":" place"):l.item.gift?giftLine(l.item.id)+" · posted in a gift sleeve":(l.item.author?esc(l.item.author)+" · ":"")+l.item.cat}</div><div class="qty"><button data-q="${l.item.id}" data-d="-1" aria-label="Decrease">−</button><span>${l.q}</span><button data-q="${l.item.id}" data-d="1" aria-label="Increase">+</button></div></div><div><div class="p">${THB(l.item.price*l.q)}</div><button class="rm" data-rm="${l.item.id}">Remove</button></div></div>`).join("");
   document.getElementById("cartEmpty").hidden = lines.length>0;
   document.getElementById("policyBox").style.display = lines.length?"":"none";
   const sub=lines.reduce((a,l)=>a+l.item.price*l.q,0);
@@ -464,7 +488,7 @@ function openProduct(id){
     <span class="eyebrow">${i.cat}${i.tags.find(t=>TAG[t])?" · "+TAG[i.tags.find(t=>TAG[t])]:""}</span>
     <h2>${esc(i.title)}</h2>${i.author?`<p class="author">${esc(i.author)}</p>`:""}
     <p class="price">${THB(i.price)}</p>
-    <div class="spec">${i.ticket?`<b>Session</b><span>${i.session}</span><b>Format</b><span>${i.format}</span>`:`<b>Format</b><span>${i.format}</span><b>Availability</b><span>In stock · ships from Bangkok</span><b>Delivery</b><span>฿60 Bangkok · free over ฿1,500</span>`}</div>
+    <div class="spec">${i.ticket?`<b>Session</b><span>${i.session}</span><b>Format</b><span>${i.format}</span>`:i.gift?`<b>Format</b><span>${i.format}</span><b>Validity</b><span>3 months from purchase</span><b>Delivery</b><span>฿60 Bangkok · free over ฿1,500 · or collect</span>`:`<b>Format</b><span>${i.format}</span><b>Availability</b><span>In stock · ships from Bangkok</span><b>Delivery</b><span>฿60 Bangkok · free over ฿1,500</span>`}</div>
     <p class="desc">${i.blurb}</p>
     <div class="actions"><button class="btn solid" data-add="${i.id}">Add to cart</button><button class="btn" data-wish="${i.id}">${wish.has(i.id)?"Saved to wishlist":"Add to wishlist"}</button></div>
     <p class="note">Wishlist needs a member account. Returns accepted only for wrong or damaged items — see the exchange &amp; refund policy.</p>
@@ -503,9 +527,11 @@ function renderPayment(){
   document.getElementById("deliveryBox").hidden=!physical;
   document.getElementById("ticketNote").hidden=!lines.some(l=>l.item.ticket);
   document.getElementById("addrFields").style.display = PAY.ship==="pickup"?"none":"";
+  const giftTo=lines.filter(l=>l.item.gift && GIFT[l.item.id] && GIFT[l.item.id].to).map(l=>GIFT[l.item.id].to);
+  const gn=document.getElementById("giftAddrNote"); gn.hidden=!(giftTo.length && PAY.ship!=="pickup"); if(giftTo.length) gn.textContent=`Sending a gift card to ${giftTo.join(" and ")}? Enter their address here and we'll post it straight to them — or use yours to hand it over in person.`;
   document.querySelector('[data-ship="bkk"]').textContent = sub>=1500?"Free":"฿60";
   document.querySelector('[data-ship="th"]').textContent = sub>=1500?"Free":"฿90";
-  document.getElementById("paySummaryLines").innerHTML = lines.map(l=>`<div class="row" style="font-size:13.5px;color:var(--ink-soft)"><span>${esc(l.item.title)}${l.item.ticket?" · "+l.item.session:""} × ${l.q}</span><span>${l.item.price?THB(l.item.price*l.q):"Free"}</span></div>`).join("");
+  document.getElementById("paySummaryLines").innerHTML = lines.map(l=>`<div class="row" style="font-size:13.5px;color:var(--ink-soft)"><span>${esc(l.item.title)}${l.item.ticket?" · "+l.item.session:l.item.gift?" · "+giftLine(l.item.id):""} × ${l.q}</span><span>${l.item.price?THB(l.item.price*l.q):"Free"}</span></div>`).join("");
   document.getElementById("paySub").textContent=THB(sub);
   document.getElementById("payShip").textContent= physical ? (ship?THB(ship):"Free") : "—";
   document.getElementById("payTotal").textContent=THB(sub+ship);
@@ -534,8 +560,8 @@ document.getElementById("payBtn").addEventListener("click", ()=>{
   if(PAY.method==="card" && sub+ship>0 && cardNum.value.replace(/\s/g,"").length<16){ toast("Please enter a card number (any 16 digits for this preview)."); cardNum.focus(); return; }
   const no="#TWR-"+(1100+Math.floor(Math.random()*900));
   const tickets=lines.filter(l=>l.item.ticket);
-  document.getElementById("confirmText").textContent = (sub+ship>0?`Order ${no} is paid. We've emailed your receipt to ${email.value}`:`Booking ${no} is confirmed. We've emailed ${email.value}`) + (tickets.length?" with your e-tickets.":".") + (physical?(PAY.ship==="pickup"?" Your books will be ready to collect within 24 hours.":` Your books ship ${PAY.ship==="th"?"in 2–4":"in 1–2"} business days.`):"");
-  document.getElementById("confirmOrder").innerHTML = lines.map(l=>`<div class="row"><span>${esc(l.item.title)}${l.item.ticket?" · "+l.item.session:""} × ${l.q}</span><span>${l.item.price?THB(l.item.price*l.q):"Free"}</span></div>`).join("") + (physical?`<div class="row"><span>Delivery</span><span>${ship?THB(ship):"Free"}</span></div>`:"") + `<div class="row"><span>Total paid</span><span>${THB(sub+ship)}</span></div>`;
+  document.getElementById("confirmText").textContent = (sub+ship>0?`Order ${no} is paid. We've emailed your receipt to ${email.value}`:`Booking ${no} is confirmed. We've emailed ${email.value}`) + (tickets.length?" with your e-tickets.":".") + (physical?(PAY.ship==="pickup"?" Your order will be ready to collect within 24 hours.":` Your order ships ${PAY.ship==="th"?"in 2–4":"in 1–2"} business days.`):"") + (lines.some(l=>l.item.gift)?" Gift cards are redeemed in person at the shop.":"");
+  document.getElementById("confirmOrder").innerHTML = lines.map(l=>`<div class="row"><span>${esc(l.item.title)}${l.item.ticket?" · "+l.item.session:l.item.gift?" · "+giftLine(l.item.id):""} × ${l.q}</span><span>${l.item.price?THB(l.item.price*l.q):"Free"}</span></div>`).join("") + (physical?`<div class="row"><span>Delivery</span><span>${ship?THB(ship):"Free"}</span></div>`:"") + `<div class="row"><span>Total paid</span><span>${THB(sub+ship)}</span></div>`;
   cart={}; save(); renderCart(); document.getElementById("ackPolicy").checked=false;
   location.hash="#confirmation";
 });
