@@ -148,20 +148,31 @@ function buildGarden(){
   GS.sunY=+GS.sun.getAttribute("cy");
   markHere(0); GS.setBf(0.12);
 }
-/* slow day cycle: dawn -> day -> golden hour -> dusk -> night -> dawn, one loop every 2.5 minutes */
-const DAY=[ // [sky, sun fill, sun stroke, tint opacity, stars, sun lift]
-  {sky:"#FFE1D6", sun:"#FFC6A0", sunL:"#F0A070", tint:0.05, stars:0,   lift:60},   // dawn
-  {sky:"#FFF1C9", sun:"#FFD468", sunL:"#E9B93B", tint:0,    stars:0,   lift:0},    // day
-  {sky:"#FFE3A6", sun:"#FFB84D", sunL:"#E09A2E", tint:0.06, stars:0,   lift:40},   // golden hour
-  {sky:"#E9CFE0", sun:"#F2B8A8", sunL:"#D98E86", tint:0.18, stars:0.3, lift:110},  // dusk
-  {sky:"#C9B3CF", sun:"#FFF6E0", sunL:"#E8DCC8", tint:0.34, stars:1,   lift:-10},  // night (moon)
-  {sky:"#F3D9D8", sun:"#FFD9B0", sunL:"#EBB48A", tint:0.12, stars:0.4, lift:80}    // pre-dawn
+/* day cycle synced to real Bangkok time (UTC+7, no DST). Keyframes are Bangkok hours; the sun barely moves
+   through the year here (sunrise ~06:15, sunset ~18:30). Add ?clock=fast to the URL to preview a whole day in 2.5 min. */
+const DAY=[ // [hour, sky, sun fill, sun stroke, tint opacity, stars, sun lift]
+  {h:0,    sky:"#C9B3CF", sun:"#FFF6E0", sunL:"#E8DCC8", tint:0.34, stars:1,   lift:-10},  // night (moon)
+  {h:4.75, sky:"#C9B3CF", sun:"#FFF6E0", sunL:"#E8DCC8", tint:0.34, stars:1,   lift:-10},  // still night
+  {h:5.5,  sky:"#F3D9D8", sun:"#FFD9B0", sunL:"#EBB48A", tint:0.12, stars:0.4, lift:80},   // pre-dawn
+  {h:6.25, sky:"#FFE1D6", sun:"#FFC6A0", sunL:"#F0A070", tint:0.05, stars:0,   lift:60},   // sunrise
+  {h:8,    sky:"#FFF1C9", sun:"#FFD468", sunL:"#E9B93B", tint:0,    stars:0,   lift:0},    // day
+  {h:16.5, sky:"#FFF1C9", sun:"#FFD468", sunL:"#E9B93B", tint:0,    stars:0,   lift:0},    // day holds
+  {h:17.75,sky:"#FFE3A6", sun:"#FFB84D", sunL:"#E09A2E", tint:0.06, stars:0,   lift:40},   // golden hour
+  {h:18.5, sky:"#E9CFE0", sun:"#F2B8A8", sunL:"#D98E86", tint:0.18, stars:0.3, lift:110},  // sunset / dusk
+  {h:19.5, sky:"#C9B3CF", sun:"#FFF6E0", sunL:"#E8DCC8", tint:0.34, stars:1,   lift:-10},  // night (moon)
+  {h:24,   sky:"#C9B3CF", sun:"#FFF6E0", sunL:"#E8DCC8", tint:0.34, stars:1,   lift:-10}
 ];
+const FAST_CLOCK=/[?&]clock=fast/.test(location.search+location.hash);
+function bangkokHour(now){                              // 0–24, fractional
+  if(FAST_CLOCK) return ((now/150000)%1)*24;            // preview: whole day every 2.5 min
+  const d=new Date(); return ((d.getUTCHours()+7)%24) + d.getUTCMinutes()/60 + d.getUTCSeconds()/3600;
+}
 const hex2=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
 const mixHex=(a,b,t)=>{const A=hex2(a),B=hex2(b);return "#"+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,"0")).join("");};
 function dayTick(now){
-  const s=GS; if(!s||!s.sky) return; if(s.lastDay && now-s.lastDay<200) return; s.lastDay=now;
-  const period=150000, u=(((now+period/DAY.length)%period)/period)*DAY.length, i=Math.floor(u), f=easeIO(u-i), a=DAY[i], b=DAY[(i+1)%DAY.length];
+  const s=GS; if(!s||!s.sky) return; if(s.lastDay && now-s.lastDay<(FAST_CLOCK?200:1000)) return; s.lastDay=now;
+  const h=bangkokHour(now); let i=0; while(i<DAY.length-2 && DAY[i+1].h<=h) i++;
+  const a=DAY[i], b=DAY[i+1], f=easeIO(Math.min(1,Math.max(0,(h-a.h)/(b.h-a.h))));
   s.sky.setAttribute("fill", mixHex(a.sky,b.sky,f));
   s.sun.setAttribute("fill", mixHex(a.sun,b.sun,f)); s.sun.setAttribute("stroke", mixHex(a.sunL,b.sunL,f));
   s.sun.setAttribute("cy", s.sunY + a.lift+(b.lift-a.lift)*f);
@@ -299,16 +310,16 @@ function cover(item, big){
 }
 function wrapText(s,n){const w=s.split(" "),out=[];let cur="";for(const x of w){if((cur+" "+x).trim().length>n){out.push(cur.trim());cur=x}else cur+=" "+x}if(cur.trim())out.push(cur.trim());return out.slice(0,2)}
 const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
-const TAG = {new:"New release", picks:"Book club pick", bestseller:"Bestseller", limited:"Limited edition"};
+const TAG = {new:"New arrival", picks:"Book club pick", bestseller:"Bestseller", limited:"Limited edition"};
 
 /* ---------- State ---------- */
 let cart = {}, wish = new Set();
 try{ cart = JSON.parse(localStorage.getItem("twr.cart")||"{}"); wish = new Set(JSON.parse(localStorage.getItem("twr.wish")||"[]")); }catch(e){}
 function save(){ try{ localStorage.setItem("twr.cart", JSON.stringify(cart)); localStorage.setItem("twr.wish", JSON.stringify([...wish])); }catch(e){} }
 const TICKETS = [
-  {id:"t1a", ev:0, title:"Fold a River — origami workshop", session:"Sat 3 Oct · 11:00", cat:"Event ticket", price:350, tags:[], pattern:3, pal:3, ticket:true, format:"90 minutes · ages 5+", blurb:"Ninety minutes, one long strip of paper, and a river that ends up as a boat. Parents fold too."},
-  {id:"t1b", ev:0, title:"Fold a River — origami workshop", session:"Sat 3 Oct · 14:00", cat:"Event ticket", price:350, tags:[], pattern:3, pal:3, ticket:true, format:"90 minutes · ages 5+", blurb:"Ninety minutes, one long strip of paper, and a river that ends up as a boat. Parents fold too."},
-  {id:"t2a", ev:1, title:"Wall Label — reading & signing", session:"Thu 15 Oct · 19:00", cat:"Event ticket", price:0, tags:[], pattern:2, pal:1, ticket:true, format:"About an hour · free", blurb:"Ines Marchetti reads from her museum-caption novel, followed by a conversation about writing in fragments."}
+  {id:"t1a", ev:0, title:"Fold a River — origami workshop", session:"Sat 3 Oct · 11:00", cat:"Event ticket", price:350, cap:16, sold:12, tags:[], pattern:3, pal:3, ticket:true, format:"90 minutes · ages 5+", blurb:"Ninety minutes, one long strip of paper, and a river that ends up as a boat. Parents fold too."},
+  {id:"t1b", ev:0, title:"Fold a River — origami workshop", session:"Sat 3 Oct · 14:00", cat:"Event ticket", price:350, cap:16, sold:16, tags:[], pattern:3, pal:3, ticket:true, format:"90 minutes · ages 5+", blurb:"Ninety minutes, one long strip of paper, and a river that ends up as a boat. Parents fold too."},
+  {id:"t2a", ev:1, title:"Wall Label — reading & signing", session:"Thu 15 Oct · 19:00", cat:"Event ticket", price:0, cap:60, sold:31, tags:[], pattern:2, pal:1, ticket:true, format:"About an hour · free", blurb:"Ines Marchetti reads from her museum-caption novel, followed by a conversation about writing in fragments."}
 ];
 const ALL = [...BOOKS, ...NONBOOKS, ...TICKETS];
 const find = id => ALL.find(x=>x.id===id);
@@ -358,7 +369,8 @@ const EVENTS = {
 function evArt(e){ return cover({title:"",pattern:e.art,pal:e.pal}).replace(/<text[\s\S]*?<\/text>/g,"").replace('viewBox="0 0 300 400"','viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice"'); }
 const cur = EVENTS.current;
 document.getElementById("evCurrent").innerHTML = `<a class="ev-hero" href="#events" onclick="event.preventDefault();toast('Event detail page — ${esc(cur.title)}')"><svg class="art" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice">${evArt(cur).replace(/^<svg[^>]*>|<\/svg>$/g,"")}</svg><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(94,51,73,0) 8%,rgba(94,51,73,.55) 45%,rgba(94,51,73,.95))"></div><div class="body"><p class="eyebrow">Now on</p><h3 class="display">${cur.title}</h3><p>${cur.desc}</p><p class="when">${cur.when}</p></div></a>`;
-document.getElementById("evUpcoming").innerHTML = EVENTS.upcoming.map(e=>`<div class="ev-card"><div class="art">${evArt(e)}</div><div class="body"><span class="when">${e.when}</span><h3>${e.title}</h3><p>${e.desc}</p><a class="btn small solid" href="#book" data-ev="${EVENTS.upcoming.indexOf(e)}">Book a place</a></div></div>`).join("");
+function evStatus(i){ const sess=EVSESS[i]; const open=sess.filter(t=>left(t)>0); if(!open.length) return {html:`<span class="avail out" style="margin:0 0 8px">Sold out</span>`, btn:`<a class="btn small" href="#book" data-ev="${i}">Join waitlist</a>`}; const n=open.reduce((a,t)=>a+left(t),0); return {html: n<=6?`<span class="avail low" style="margin:0 0 8px">${n} places left</span>`:"", btn:`<a class="btn small solid" href="#book" data-ev="${i}">Book a place</a>`}; }
+function renderUpcoming(){ document.getElementById("evUpcoming").innerHTML = EVENTS.upcoming.map((e,i)=>{ const st=evStatus(i); return `<div class="ev-card"><div class="art">${evArt(e)}</div><div class="body"><span class="when">${e.when}</span>${st.html}<h3>${e.title}</h3><p>${e.desc}</p>${st.btn}</div></div>`; }).join(""); }
 document.getElementById("evPast").innerHTML = EVENTS.past.map(e=>`<div class="item"><div class="art">${evArt(e)}</div><h4>${e.title}</h4><p>${e.desc}</p><span class="when">${e.when}</span></div>`).join("");
 document.getElementById("homeEvents").innerHTML = `<div class="ev-two" style="margin-top:0">${[cur, EVENTS.upcoming[0]].map((e,i)=>`<div class="ev-card"><div class="art">${evArt(e)}</div><div class="body"><span class="when">${i?e.when:"Now on · "+e.when}</span><h3>${e.title}</h3><p>${e.desc}</p><a class="btn small" href="${i?"#book":"#events"}" ${i?'data-ev="0"':""}>${i?"Book a place":"See the exhibition"}</a></div></div>`).join("")}</div>`;
 
@@ -384,11 +396,11 @@ const bookShop = shop({
   items:BOOKS, tabsEl:document.getElementById("bookTabs"), gridEl:document.getElementById("bookGrid"), countEl:document.getElementById("bookCount"), emptyEl:document.getElementById("bookEmpty"), searchEl:document.getElementById("bookSearch"),
   tabs:[
     {key:"all", label:"All books", f:()=>true},
-    {key:"new", label:"New release", f:b=>b.tags.includes("new")},
+    {key:"new", label:"New arrivals", f:b=>b.tags.includes("new")},
     {key:"Picture Books", label:"Picture books", f:b=>b.cat==="Picture Books"},
-    {key:"Fiction", label:"Adults: Fiction", f:b=>b.cat==="Fiction"},
-    {key:"Non-fiction", label:"Adults: Non-fiction", f:b=>b.cat==="Non-fiction"},
-    {key:"Design & Art", label:"Adults: Design & Art", f:b=>b.cat==="Design & Art"},
+    {key:"Fiction", label:"Fiction", f:b=>b.cat==="Fiction"},
+    {key:"Non-fiction", label:"Non-fiction", f:b=>b.cat==="Non-fiction"},
+    {key:"Design & Art", label:"Design & Art", f:b=>b.cat==="Design & Art"},
     {key:"limited", label:"Limited editions / Collaborations", f:b=>b.tags.includes("limited")||b.cat==="Limited Editions"},
     {key:"picks", label:"Book club picks", f:b=>b.tags.includes("picks")}
   ]
@@ -397,7 +409,7 @@ const nbShop = shop({
   items:NONBOOKS, tabsEl:document.getElementById("nbTabs"), gridEl:document.getElementById("nbGrid"), countEl:document.getElementById("nbCount"), emptyEl:document.getElementById("nbEmpty"), searchEl:document.getElementById("nbSearch"),
   tabs:[
     {key:"all", label:"All", f:()=>true},
-    {key:"new", label:"New release", f:b=>b.tags.includes("new")},
+    {key:"new", label:"New arrivals", f:b=>b.tags.includes("new")},
     {key:"Games", label:"Games", f:b=>b.cat==="Games"},
     {key:"Prints", label:"Prints", f:b=>b.cat==="Prints"},
     {key:"Objects", label:"Objects & stationery", f:b=>b.cat==="Objects"||b.cat==="Stationery"},
@@ -531,25 +543,34 @@ document.getElementById("payBtn").addEventListener("click", ()=>{
 /* ---------- Book a place ---------- */
 const BK={ev:0, session:0, places:2};
 const EVSESS=[[TICKETS[0],TICKETS[1]],[TICKETS[2]]];
+const left=t=>Math.max(0,t.cap-t.sold-(cart[t.id]||0));
+const availBadge=t=>{ const n=left(t); return n===0?`<span class="avail out">Sold out</span>`: n<=4?`<span class="avail low">${n} left</span>`:""; };
+renderUpcoming();
 function renderBooking(){
   const evs=EVENTS.upcoming;
-  document.getElementById("evPick").innerHTML = evs.map((e,i)=>`<label><input type="radio" name="bkev" value="${i}" ${i===BK.ev?"checked":""}><div class="art">${evArt(e)}</div><div class="b"><b>${e.title}</b><span>${e.when}</span></div></label>`).join("");
-  const sess=EVSESS[BK.ev]; if(BK.session>=sess.length) BK.session=0;
-  document.getElementById("sessionChoice").innerHTML = sess.map((t,i)=>`<label><input type="radio" name="bksess" value="${i}" ${i===BK.session?"checked":""}><span>${t.session}<small>${t.format}</small></span><span class="amt">${t.price?THB(t.price)+" / place":"Free"}</span></label>`).join("");
-  const t=sess[BK.session];
+  document.getElementById("evPick").innerHTML = evs.map((e,i)=>{ const all=EVSESS[i].every(t=>left(t)===0); return `<label class="${all?"soldout":""}"><input type="radio" name="bkev" value="${i}" ${i===BK.ev?"checked":""}><div class="art">${evArt(e)}</div><div class="b"><b>${e.title}${all?'<span class="avail out">Sold out</span>':""}</b><span>${e.when}</span></div></label>`; }).join("");
+  const sess=EVSESS[BK.ev];
+  if(BK.session>=sess.length || left(sess[BK.session])===0){ const first=sess.findIndex(t=>left(t)>0); BK.session=first>=0?first:0; }
+  const anyOpen=sess.some(t=>left(t)>0);
+  document.getElementById("sessionChoice").innerHTML = sess.map((t,i)=>{ const n=left(t), out=n===0; return `<label class="${out?"soldout":""}" aria-disabled="${out}"><input type="radio" name="bksess" value="${i}" ${i===BK.session&&!out?"checked":""} ${out?"disabled":""}><span>${t.session}${availBadge(t)}<small>${t.format}</small></span><span class="amt">${t.price?THB(t.price)+" / place":"Free"}</span></label>`; }).join("") + (anyOpen?"":`<p class="waitlist">Every session is full. <a href="mailto:contact@todayweread.com?subject=Waitlist: ${encodeURIComponent(sess[0].title)}">Join the waitlist</a> and we'll email you if places open up or we add a session.</p>`);
+  const t=sess[BK.session]; const max=Math.max(1,Math.min(8,left(t)));
+  if(BK.places>max) BK.places=max;
+  document.getElementById("plPlus").disabled = BK.places>=max; document.getElementById("plMinus").disabled = BK.places<=1;
+  document.getElementById("plNote").textContent = anyOpen ? (left(t)<=8?`${left(t)} ${left(t)===1?"place":"places"} left in this session. `:"") + "Children need an accompanying adult — count everyone who's coming." : "No places available for this event.";
+  document.getElementById("bkAdd").disabled=!anyOpen;
   document.getElementById("plCount").textContent=BK.places;
   document.getElementById("bkSumEvent").textContent=t.title;
   document.getElementById("bkSumSession").textContent=`${t.session} · ${BK.places} ${BK.places>1?"places":"place"}`;
   document.getElementById("bkSumPrice").textContent=t.price?`${BK.places} × ${THB(t.price)}`:"";
   document.getElementById("bkSumTotal").textContent=THB(t.price*BK.places);
-  document.getElementById("bkAdd").textContent = t.price ? "Add to bag & check out" : "Reserve places";
+  document.getElementById("bkAdd").textContent = !anyOpen ? "Sold out" : t.price ? "Add to bag & check out" : "Reserve places";
 }
 document.getElementById("evPick").addEventListener("change", e=>{ BK.ev=+e.target.value; BK.session=0; renderBooking(); });
 document.getElementById("sessionChoice").addEventListener("change", e=>{ BK.session=+e.target.value; renderBooking(); });
 document.getElementById("plMinus").addEventListener("click", ()=>{ BK.places=Math.max(1,BK.places-1); renderBooking(); });
 document.getElementById("plPlus").addEventListener("click", ()=>{ BK.places=Math.min(8,BK.places+1); renderBooking(); });
 document.getElementById("bkAdd").addEventListener("click", ()=>{
-  const t=EVSESS[BK.ev][BK.session];
+  const t=EVSESS[BK.ev][BK.session]; if(left(t)<BK.places){ toast(`Only ${left(t)} ${left(t)===1?"place":"places"} left in that session.`); renderBooking(); return; }
   cart[t.id]=(cart[t.id]||0)+BK.places; save(); renderCart();
   const n=document.getElementById("bkName").value, em=document.getElementById("bkEmail").value;
   if(n) document.getElementById("payName").value=n; if(em) document.getElementById("payEmail").value=em;
@@ -590,6 +611,7 @@ function route(){
   if(name==="cart") renderCart();
   if(name==="payment") renderPayment();
   if(name==="book"){ if(pendingEv!=null){ BK.ev=pendingEv; BK.session=0; pendingEv=null; } renderBooking(); }
+  if(name==="events") renderUpcoming();
   if(name==="account") renderAccount();
   closeSearch();
   closeDrawer();

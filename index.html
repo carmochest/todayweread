@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Today We Read</title>
 <meta name="description" content="Today We Read — a bookshop for families who read together. Curated books, gifts and events in Bangkok.">
 <style>
@@ -347,6 +347,15 @@ section.block{padding-block:clamp(48px,7vw,96px)}
 .search-hint{padding:0 16px 18px;font-size:13px;color:var(--ink-soft)}
 @media (max-width:640px){.ev-pick{grid-template-columns:1fr}.qr{grid-template-columns:1fr}}
 
+.choice label.soldout{opacity:.55;cursor:not-allowed;background:repeating-linear-gradient(135deg,transparent 0 8px,rgba(94,51,73,.04) 8px 16px)}
+.choice label.soldout .amt{text-decoration:line-through;color:var(--ink-soft)}
+.avail{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;margin-left:8px;vertical-align:middle}
+.avail.low{background:var(--butter-pale);color:var(--plum-deep)}
+.avail.out{background:var(--plum-pale);color:var(--plum-deep)}
+.ev-pick label.soldout{opacity:.6}
+.waitlist{margin-top:10px;font-size:13.5px;color:var(--ink-soft)}
+.waitlist a{color:var(--plum);text-decoration:underline;text-underline-offset:3px}
+
 /* ---------- Gift card ---------- */
 .gift-layout{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;padding-block:40px 72px}
 .gc{aspect-ratio:1.586;border-radius:14px;background:var(--butter);position:relative;overflow:hidden;padding:24px;color:var(--plum-deep);box-shadow:0 30px 50px -24px rgba(94,51,73,.5)}
@@ -437,6 +446,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
 </head>
 <body>
 
+
 <div class="announce"><b>Free delivery</b> in Bangkok on orders over ฿1,500 &nbsp;·&nbsp; <span class="hide-m">New arrivals every Thursday &nbsp;·&nbsp; </span><a href="#events" style="text-decoration:underline;text-underline-offset:3px">September mini-exhibition now open</a></div>
 
 <header class="site">
@@ -473,8 +483,8 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
   <section class="block">
     <div class="wrap">
       <div class="sec-head">
-        <div><p class="eyebrow">Just landed</p><h2 class="display">New releases</h2></div>
-        <div style="display:flex;gap:18px;align-items:center"><a class="link" href="#books">See all new titles</a><div class="rail-nav"><button type="button" data-rail="railNew" data-dir="prev" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><button type="button" data-rail="railNew" data-dir="next" aria-label="Next"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div></div>
+        <div><p class="eyebrow">Just landed</p><h2 class="display">New arrivals</h2></div>
+        <div style="display:flex;gap:18px;align-items:center"><a class="link" href="#books">See all new arrivals</a><div class="rail-nav"><button type="button" data-rail="railNew" data-dir="prev" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><button type="button" data-rail="railNew" data-dir="next" aria-label="Next"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div></div>
       </div>
       <div class="rail" id="railNew"></div>
     </div>
@@ -536,7 +546,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
 <!-- ================= BOOKS ================= -->
 <section class="view" data-view="books">
   <div class="page-head"><div class="wrap">
-    <p class="eyebrow">Page 2</p>
+        <p class="eyebrow">Shop</p>
     <h1 class="display">Books</h1>
     <p>Search by title, author or category. Every title is chosen by a bookseller who has actually read it.</p>
     <div class="tabs" role="tablist" id="bookTabs"></div>
@@ -555,7 +565,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
 <!-- ================= NON-BOOKS ================= -->
 <section class="view" data-view="nonbooks">
   <div class="page-head"><div class="wrap">
-    <p class="eyebrow">Page 3</p>
+        <p class="eyebrow">Shop</p>
     <h1 class="display">Non-books</h1>
     <p>Games, prints, stationery and the occasional collaboration — objects that belong next to a good book.</p>
     <div class="tabs" role="tablist" id="nbTabs"></div>
@@ -592,7 +602,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
 <!-- ================= GIFT CARD ================= -->
 <section class="view" data-view="gift">
   <div class="page-head" style="border:0"><div class="wrap">
-    <p class="eyebrow">Page 6</p>
+        <p class="eyebrow">In store</p>
     <h1 class="display">Gift card</h1>
   </div></div>
   <div class="wrap gift-layout">
@@ -638,7 +648,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
 <!-- ================= ACCOUNT ================= -->
 <section class="view" data-view="account">
   <div class="page-head" style="border:0"><div class="wrap">
-    <p class="eyebrow">Page 5</p>
+        <p class="eyebrow">Members</p>
     <h1 class="display">My account</h1>
   </div></div>
   <div class="wrap acct">
@@ -681,7 +691,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
   <div class="wrap cart-layout">
     <div>
       <div id="cartLines"></div>
-      <div class="empty" id="cartEmpty" hidden>Your bag is empty. <a href="#books" style="color:var(--plum);text-decoration:underline">Start with the new releases →</a></div>
+      <div class="empty" id="cartEmpty" hidden>Your bag is empty. <a href="#books" style="color:var(--plum);text-decoration:underline">Start with the new arrivals →</a></div>
       <div class="policy" id="policyBox">
         <b>Delivery</b> — Bangkok ฿60 (1–2 business days), rest of Thailand ฿90 (2–4 business days). Free on orders over ฿1,500. Orders placed before 2pm ship the same day.
         <details>
@@ -889,7 +899,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
     <h2>What we collect</h2>
     <ul><li><b>Account and order details</b> — name, email, telephone number, delivery address and order history, when you create an account, place an order or book an event.</li><li><b>Payment</b> — handled by our payment provider; we receive confirmation of payment, not your card number.</li><li><b>Preferences</b> — wishlist items and, with your consent, whether you'd like to receive news from us.</li><li><b>Website use</b> — basic technical data (device, browser, pages visited) to keep the site working and understand what people read.</li></ul>
     <h2>Why we use it</h2>
-    <ul><li>To fulfil and deliver orders, confirm event bookings and provide customer service.</li><li>To run your account, wishlist and order history.</li><li>To send news, new releases and event invitations — only if you opt in, and you can opt out from any email.</li><li>To keep the shop's records and meet accounting and tax obligations.</li></ul>
+    <ul><li>To fulfil and deliver orders, confirm event bookings and provide customer service.</li><li>To run your account, wishlist and order history.</li><li>To send news, new arrivals and event invitations — only if you opt in, and you can opt out from any email.</li><li>To keep the shop's records and meet accounting and tax obligations.</li></ul>
     <h2>Who we share it with</h2>
     <p>Only the services needed to run the shop: our e-commerce platform (Shopify), payment providers, delivery couriers, our accounting system, and email service. They process data on our instructions. We do not sell personal data.</p>
     <h2>How long we keep it</h2>
@@ -948,7 +958,7 @@ footer.site{background:var(--plum-deep);color:var(--white);padding-block:56px 32
 <aside class="drawer" id="drawer" aria-label="Product details"><div class="inner" id="drawerInner"></div></aside>
 <div class="toast" id="toast" role="status" aria-live="polite"><span class="bf" data-butterfly="idle"></span><span id="toastText"></span></div>
 
-<script src="app.js?v=2.1"></script>
+<script src="app.js?v=2.3"></script>
 
 </body>
 </html>
